@@ -1,0 +1,51 @@
+﻿<style>
+    .access-denied-container{
+        width:100%;
+        min-height:90dvh;
+        min-height: 90vh;
+        /*center text*/
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+    }
+    .box-icon-error{
+        width:300px;
+        height:330px;
+        display:grid;
+        grid-template-rows:auto 30px;
+        & > span{
+            display:flex;
+            justify-content:center;
+            flex-direction:column;
+            text-align:center;
+            color:red;
+            font-size: clamp(1rem,2.5vw,2.3rem);
+            text-transform:uppercase;
+            padding:0.5rem;
+        }
+    }
+    .icon-stop{
+        background:red;
+        border-radius:50%;
+
+        display:flex;
+        justify-content:center;
+        flex-direction:column;
+        align-items:center;
+        & > span{
+            width:80%;
+            height:20%;
+            background:white;
+        }
+    }
+</style>
+
+<div class="access-denied-container">
+    <div class="box-icon-error">
+        <div class="icon-stop">
+            <span></span>
+        </div>
+        <span>access denied</span>
+    </div>
+</div>
