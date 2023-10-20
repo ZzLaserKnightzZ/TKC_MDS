@@ -1,21 +1,41 @@
-﻿namespace TKC_MDS.Models.DTO
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TKC_MDS.Models.DTO
 {
 	public class AddDataType
 	{
-		public string CustumerId { get; set; }
+
+		[Required]
+		public string CustID { get; set; }
+		[Required]
 		public string TypeCode { get; set; }
-		public bool IsPO { get; set; }
-		public bool CreateByMSD { get; set; }
-		public bool IsPrintPOS { get; set; }
-		public bool IsShowInReport { get; set; }
-		public bool IsCombind_99 { get; set; }
-		public bool DeleteBeforeSameData { get; set; }
-		public bool OneColHasManyRowsDue { get; set; }
-		public bool Due { get; set; }
-		public int DataOneSet { get; set; }
-		public int DataRolCount { get; set; }
-		public int StringOfOneSet { get; set; }
+		public bool DeleteOld { get; set; }
+		//public bool SepMDSbyFlag01 { get; set; } //ไม่มี
+		public bool FirmOrder { get; set; }
+		public bool MakeMDS { get; set; }
+		public bool ShowInSch { get; set; }
+		//[Required]
+		public string? MixedSchWith { get; set; }
+		//[Required]
+		//public string UpdatedBy { get; set; }
+		//public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+		public bool RowManyDue { get; set; }
+		public bool ManyDueType { get; set; }
+		public int ManyDueDataNo { get; set; }
+		public int ManyDueSetNo { get; set; }
+		public int ManyDueDataLong { get; set; }
+		public bool? ForPOS { get; set; }
+		public string? Note { get; set; }
+		//table ...conv
 		public bool HaveSeperator { get; set; }
 		public string Seperator { get; set; }
+
+		public List<Field>? FieldsList { get; set; }
+	}
+
+	public class  Field
+	{
+		public string? Name { get; set; }
+		public int? StartPosition { get; set; }
 	}
 }

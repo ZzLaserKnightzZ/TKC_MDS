@@ -37,8 +37,8 @@ builder.Services.ConfigureApplicationCookie(option =>
 
 //add log
 var logger = Log.Logger = new LoggerConfiguration()
-	.WriteTo.Console()
-	.WriteTo.File(Directory.GetCurrentDirectory()+"/logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Console()
+	.WriteTo.File(Directory.GetCurrentDirectory()+"/logs/log-.txt", Serilog.Events.LogEventLevel.Error ,rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
 	.CreateLogger();
 builder.Logging.AddSerilog(logger);
 

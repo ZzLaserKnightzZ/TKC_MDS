@@ -653,7 +653,7 @@
 								<!--end::Scroll-->
 								<!--begin::Actions-->
 								<div class="text-center pt-15">
-									<button type="reset" class="btn btn-light me-3" data-kt-roles-modal-action="cancel" onclick="modalAddRole()">Discard</button>
+									<button type="reset" class="btn btn-light me-3"  onclick="modalAddRole()">Discard</button>
 								<button  class="btn btn-primary"  onclick="clickSave()">
 										<span class="indicator-label">Submit</span>
 										<span class="indicator-progress">
@@ -674,7 +674,7 @@
 			</div>
 			<!--end::Modal - Add role-->
 			<!--begin::Modal - Update role-->
-			<div class="modal fade" id="kt_modal_update_role" tabindex="-1" aria-hidden="true">
+			<div class="modal fade" id="kt_modal_update_role">
 				<!--begin::Modal dialog-->
 				<div class="modal-dialog modal-dialog-centered mw-750px">
 					<!--begin::Modal content-->
@@ -685,7 +685,7 @@
 							<h2 class="fw-bold">Update Role</h2>
 							<!--end::Modal title-->
 							<!--begin::Close-->
-							<div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-roles-modal-action="close">
+							<div class="btn btn-icon btn-sm btn-active-icon-primary" onclick="modalEditRole()">
 								<i class="ki-duotone ki-cross fs-1">
 									<span class="path1"></span>
 									<span class="path2"></span>
@@ -1004,6 +1004,7 @@
 															</td>
 														</tr>`, "");
 			document.getElementById("update_role").innerHTML = html;
+			modalEditRole();
 		}).catch(error => console.log(error));
 		}
 
@@ -1018,18 +1019,6 @@
 			} else {
 				modal.style.display = "none";
 			}
-			/*
-			let modal = document.getElementById("kt_modal_add_role");
-			modal.classList.toggle("show");
-			if (modal.classList.contains("show")) {
-				modal.style.display = "block";
-			modal.attributes["role"].value = "dialog";
-			}else{
-				modal.style.display = "none";
-			modal.attributes["role"].value = "";
-			let back_drop = document.getElementById('kt_app_body');
-			back_drop.removeChild(back_drop.lastChild);
-			}*/
 		}
 
 	const modalEditRole = () => {
@@ -1037,13 +1026,13 @@
 		modal.classList.toggle("show");
 		if (modal.classList.contains("show")) {
 			modal.style.display = "block";
-			modal.attributes["role"].value = "dialog";
+			//modal.attributes["role"].value = "dialog";
 		} else {
 			modal.style.display = "none";
-			modal.attributes["role"].value = "";
+			//modal.attributes["role"].value = "";
 		}
-		let back_drop = document.getElementById('kt_app_body');
-		back_drop.removeChild(back_drop.lastChild);
+		//let back_drop = document.getElementById('kt_app_body');
+		//back_drop.removeChild(back_drop.lastChild);
 	}
 
 		const clickSave = () => {
@@ -1132,20 +1121,7 @@
 				}
 			});
 		}
-		/*
-		const checkAll_EditRole = () => {
-			let chk_box = document.getElementById("checkall_pda").checked;
-			document.querySelector("#assign_roles").querySelectorAll("input[type=checkbox]").forEach(checkbox => {
-				if (chk_box) {
-					checkbox.checked = true;
-					checkbox.value = true;
-				} else {
-					checkbox.checked = false;
-					checkbox.value = false;
-				}
-			});
-		}
-		*/
+
 
 	const chkBoxClick = (chk_box) => {
 			if (chk_box.checked) {

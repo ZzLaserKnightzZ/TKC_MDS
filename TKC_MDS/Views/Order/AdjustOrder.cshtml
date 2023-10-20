@@ -43,7 +43,7 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer">
 											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-k22b">
 												เลือกลูกค้า
 											</option>
@@ -56,7 +56,7 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType">
 											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-0afp"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
 											<option value="2">4303-TOYOTA </option>
@@ -262,3 +262,16 @@
 	</div>
 	<!--end::Content container-->
 </div>
+<script>
+	window.onload = async () => {
+		let select_custumer = document.getElementById("select_custumer");
+		const listUser = await fetch("/order/JsonCustumer");
+		const users_json = await listUser.json();
+		select_custumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected > </option>`);
+
+		const dataType = await fetch("/order/JsonDataType_MS");
+		const data_type = await dataType.json();
+		let select_dataType = document.getElementById("select_dataType");
+		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeName}</option>`, "<option selected></option>");
+	}
+</script>

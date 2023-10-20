@@ -11,7 +11,7 @@
 			<div class="col-xl-1  "></div>
 
 			<!--begin::Col-->
-			<div class="col-xl-10  ">
+			<div class="col-xl-10">
 				<!--begin::Table Widget 5-->
 				<div class="card card-flush h-xl-100">
 					<!--begin::Card header-->
@@ -38,13 +38,7 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px " id="custumer_select" >
-											<option value="0" >
-												เลือกลูกค้า
-											</option>
-											<option value="1">4302-MITSUBISHI P/C</option>
-											<option value="2">4303-TOYOTA </option>
-
+											<select name="CustID" class="form-select form-select-sm form-select-solid w-200px " id="custumer_select">
 										</select>
 									</td>
 								</tr>
@@ -53,16 +47,11 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_data_type" >
-											<option value="0" >
-												เลือกประเภทข้อมูล
-											</option>
-											<option value="1">01- P/O</option>
-											<option value="2">02- Forecast </option>
+											<select name="TypeCode" class="form-select form-select-sm form-select-solid w-200px" id="select_data_type">
 										</select>
 									</td>
 									<td class="text-start pe-3 min-w-50px">
-										<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_user" onclick="showDialogAddUser()">
+										<button type="button" class="btn btn-primary"  onclick="showDialogAddUser()">
 											เพิ่ม
 										</button>
 									</td>
@@ -74,9 +63,9 @@
 										P/O:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px " data-control="select2" >
-											<option value="1" selected="selected" data-select2-id="select2-data-9-khj4">Yes</option>
-											<option value="2">No</option>
+											<select name="FirmOrder" class="form-select form-select-sm form-select-solid w-200px ">
+											<option value="true" selected="selected" >Yes</option>
+											<option value="false">No</option>
 
 										</select>
 									</td>
@@ -84,21 +73,25 @@
 										สร้างรายงานMDSด้วย
 										:
 									</th>
-									<td class="text-start pe-3 min-w-30px"> <input type="checkbox" checked="checked" name="Checkboxes1"></td>
+										<td class="text-start pe-3 min-w-30px"> 
+											<input type="checkbox" checked="checked" name="MakeMDS" value="true" onclick="clickCheckBox(this)">
+										</td>
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ใช้พิมพ์POS
 										:
 									</th>
-									<td class="text-start pe-3 min-w-30px"> <input type="checkbox" checked="checked" name="Checkboxes1"></td>
+										<td class="text-start pe-3 min-w-30px">
+											<input type="checkbox" checked="checked" name="ForPOS" value="true" onclick="clickCheckBox(this)">
+										</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										แสดงในรายงานMDS :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px " data-control="select2" data-placeholder="Select Hours" data-hide-search="true" data-select2-id="select2-data-10-wouk" tabindex="-1" aria-hidden="true" data-kt-initialized="1">
-											<option value="1" selected="selected" data-select2-id="select2-data-12-ldlw">Yes</option>
-											<option value="2">No</option>
+											<select class="form-select form-select-sm form-select-solid w-200px " name="ShowInSch">
+											<option value="true" selected="selected" >Yes</option>
+											<option value="false">No</option>
 
 										</select>
 									</td>
@@ -111,9 +104,9 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" selected="selected" data-select2-id="select2-data-15-qa4x">99-ไม่รวม</option>
-											<option value="2">98-รวม</option>
+											<select class="form-select form-select-sm form-select-solid w-200px"  name="MixedSchWith" id="select_mixSchWidth">
+											<option value="" selected="selected" >99-ไม่รวม</option>
+											<option value="">98-รวม</option>
 
 										</select>
 									</td>
@@ -123,7 +116,7 @@
 										ลบข้อมูลก่อนนำเข้า :
 									</th>
 									<td class="text-start pe-3 min-w-30px text-danger">
-										<input type="checkbox" checked="checked" name="Checkboxes1">
+											<input type="checkbox" checked="checked" name="DeleteOld" value="true" onclick="clickCheckBox(this)">
 										*ลบข้อมูลเก่าที่ชื่อไฟล์เหมือนกัน
 									</td>
 								</tr>
@@ -131,7 +124,9 @@
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										หนึ่งแถวข้อมูลมีหลายDue :
 									</th>
-									<td class="text-start pe-3 min-w-30px"> <input type="checkbox" checked="checked" name="Checkboxes1"></td>
+										<td class="text-start pe-3 min-w-30px"> 
+											<input type="checkbox" checked="checked" name="RowManyDue" value="true" onclick="clickCheckBox(this)">
+										</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7  gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
@@ -139,12 +134,12 @@
 										<div class="form-group">
 											<div class="radio-inline">
 												<label class="radio">
-													<input type="radio" name="radios2">
+														<input type="radio" name="ManyDueType" value="true" checked>
 													<span></span>
 													Due สลับกับ Qty
 												</label>
 												<label class="radio">
-													<input type="radio" name="radios2">
+														<input type="radio" name="ManyDueType" value="false">
 													<span></span>
 													Due ติดกับ Due
 												</label>
@@ -160,7 +155,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<input class="form-control" type="text" id="example-text-input" style="width: 50%;">
+											<input class="form-control" type="text" name="ManyDueDataLong" style="width: 50%;">
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
@@ -169,7 +164,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<input class="form-control" type="text" id="example-text-input" style="width: 50%;">
+											<input class="form-control" type="text" name="ManyDueDataNo" style="width: 50%;">
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
@@ -179,7 +174,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<input class="form-control " type="text" id="example-text-input" style="width: 50%;">
+											<input class="form-control " type="text" name="ManyDueSetNo" style="width: 50%;">
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
@@ -188,11 +183,11 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" selected="selected" data-select2-id="select2-data-18-zpkj">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="HaveSeperator">
+											<option value="true" selected="selected" >
 												แถวข้อมูลมีตัวคั่นเช่น , | Tab
 											</option>
-											<option value="2">เป็นแถวข้อมูลที่ไม่มีตัวคั่น</option>
+											<option value="false">เป็นแถวข้อมูลที่ไม่มีตัวคั่น</option>
 
 										</select>
 									</td>
@@ -200,14 +195,23 @@
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px select2-hidden-accessible" data-control="select2" data-placeholder="Select Hours" data-hide-search="true" data-select2-id="select2-data-19-m75q" tabindex="-1" aria-hidden="true" data-kt-initialized="1">
-											<option value="1" selected="selected" data-select2-id="select2-data-21-9nlv">,</option>
-											<option value="2">|</option>
-											<option value="3">Tab</option>
+											<select class="form-select form-select-sm form-select-solid w-200px" name="Seperator">
+											<option value="," selected="selected">,</option>
+											<option value="|">|</option>
+											<option value="Tab">Tab</option>
 
-										</select><span class="select2 select2-container select2-container--bootstrap5" dir="ltr" data-select2-id="select2-data-20-w6hj" style="width: 100%;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm form-select-solid w-200px" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-khxj-container" aria-controls="select2-khxj-container"><span class="select2-selection__rendered" id="select2-khxj-container" role="textbox" aria-readonly="true" title=",">,</span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+										</select>
 									</td>
 								</tr>
+									<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+										<th class="text-end  text-gray-400 pe-3 min-w-100px">
+											โน๊ตช่วยจำ
+											:
+										</th>
+										<td class="text-end pe-3 min-w-50px">
+											<input class="form-control " type="text" name="Note">
+										</td>
+									</tr>
 								<!--end::Table row-->
 								<!--end::Table head-->
 
@@ -215,9 +219,8 @@
 						</table>
 						<!--end::Table-->
 						<div class="d-flex justify-content-center">
-								<a class="btn btn-sm fw-bold btn-primary me-2" onclick="addDataTypeCus()">บันทึก</a>
+							<a class="btn btn-sm fw-bold btn-primary me-2" onclick="addDataTypeCus()">บันทึก</a>
 							<a class="btn btn-sm fw-bold btn-secondary me-2">ยกเลิก</a>
-
 						</div>
 
 					</div>
@@ -245,9 +248,9 @@
 								<tr>
 									<td class="text-start  pe-3 min-w-10px">1</td>
 									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="0"> </option>
-											<option value="1" selected="" data-select2-id="select2-data-24-5bzm">OrderNo</option>
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[0][Name]">
+											<option  selected=""> </option>
+											<option value="1" >OrderNo</option>
 											<option value="2">PONo</option>
 											<option value="3">DueDate-DMY</option>
 											<option value="4">PartNo</option>
@@ -257,96 +260,103 @@
 										</select>
 									</td>
 									<td class="text-center pe-3 min-w-100px">
-										<input type="text" class="text-center" value="0">
+											<input type="text" class="text-center" name="FieldsList[0][StartPosition]">
+									</td>
+
+								</tr>
+								<tr>
+										<td class="text-start  pe-3 min-w-10px">1</td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[1][Name]">
+												<option  selected=""> </option>
+												<option value="1" >OrderNo</option>
+												<option value="2">PONo</option>
+												<option value="3">DueDate-DMY</option>
+												<option value="4">PartNo</option>
+												<option value="5">Qty</option>
+												<option value="6">PlantCode</option>
+
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+											<input type="text" class="text-center" name="FieldsList[1][StartPosition]">
 										</td>
 
 								</tr>
 								<tr>
-									<td class="text-start  pe-3 min-w-10px">2</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="0"> </option>
-											<option value="1">OrderNo</option>
-											<option value="2" selected="" data-select2-id="select2-data-27-l98z">PONo</option>
-											<option value="3">DueDate-DMY</option>
-											<option value="4">PartNo</option>
-											<option value="5">Qty</option>
-											<option value="6">PlantCode</option>
+										<td class="text-start  pe-3 min-w-10px">1</td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[2][Name]">
+												<option  selected=""> </option>
+												<option value="1">OrderNo</option>
+												<option value="2">PONo</option>
+												<option value="3">DueDate-DMY</option>
+												<option value="4">PartNo</option>
+												<option value="5">Qty</option>
+												<option value="6">PlantCode</option>
 
-										</select>
-										
-									</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<input type="text" class="text-center" value="1">
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+											<input type="text" class="text-center" name="FieldsList[2][StartPosition]">
 										</td>
 
 								</tr>
 								<tr>
-									<td class="text-start  pe-3 min-w-10px">3</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="0"> </option>
-											<option value="1">OrderNo</option>
-											<option value="2">PONo</option>
-											<option value="3" selected="" data-select2-id="select2-data-30-1ayw">DueDate-DMY</option>
-											<option value="4">PartNo</option>
-											<option value="5">Qty</option>
-											<option value="6">PlantCode</option>
+										<td class="text-start  pe-3 min-w-10px">1</td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[3][Name]">
+												<option  selected=""> </option>
+												<option value="1">OrderNo</option>
+												<option value="2">PONo</option>
+												<option value="3">DueDate-DMY</option>
+												<option value="4">PartNo</option>
+												<option value="5">Qty</option>
+												<option value="6">PlantCode</option>
 
-										</select>
-									</td>
-									<td class="text-center  pe-3 min-w-100px"><input type="text" class="text-center" value="2"></td>
-
-								</tr>
-								<tr>
-									<td class="text-start  pe-3 min-w-10px">4</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="0"> </option>
-											<option value="1">OrderNo</option>
-											<option value="2">PONo</option>
-											<option value="3">DueDate-DMY</option>
-											<option value="4" selected="" data-select2-id="select2-data-33-cf1n">PartNo</option>
-											<option value="5">Qty</option>
-											<option value="6">PlantCode</option>
-
-										</select>
-									</td>
-									<td class="text-center  pe-3 min-w-100px"><input type="text" class="text-center" value="3"></td>
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+											<input type="text" class="text-center" name="FieldsList[3][StartPosition]">
+										</td>
 
 								</tr>
 								<tr>
-									<td class="text-start  pe-3 min-w-10px">5</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px " >
-											<option value="0"> </option>
-											<option value="1">OrderNo</option>
-											<option value="2">PONo</option>
-											<option value="3">DueDate-DMY</option>
-											<option value="4">PartNo</option>
-											<option value="5" selected="" data-select2-id="select2-data-36-lv5m">Qty</option>
-											<option value="6">PlantCode</option>
+										<td class="text-start  pe-3 min-w-10px">1</td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[4][Name]">
+												<option  selected=""> </option>
+												<option value="1">OrderNo</option>
+												<option value="2">PONo</option>
+												<option value="3">DueDate-DMY</option>
+												<option value="4">PartNo</option>
+												<option value="5">Qty</option>
+												<option value="6">PlantCode</option>
 
-										</select>
-									</td>
-									<td class="text-center  pe-3 min-w-100px"><input type="text" class="text-center" value="4"></td>
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+											<input type="text" class="text-center" name="FieldsList[4][StartPosition]">
+										</td>
 
 								</tr>
 								<tr>
-									<td class="text-start  pe-3 min-w-10px">6</td>
-									<td class="text-center  pe-3 min-w-100px">
-										<select class="form-select form-select-sm form-select-solid w-200px " >
-											<option value="0"> </option>
-											<option value="1">OrderNo</option>
-											<option value="2">PONo</option>
-											<option value="3">DueDate-DMY</option>
-											<option value="4">PartNo</option>
-											<option value="5">Qty</option>
-											<option value="6" selected="" data-select2-id="select2-data-39-hqlb">PlantCode</option>
+										<td class="text-start  pe-3 min-w-10px">1</td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[5][Name]">
+												<option  selected=""> </option>
+												<option value="1" >OrderNo</option>
+												<option value="2">PONo</option>
+												<option value="3">DueDate-DMY</option>
+												<option value="4">PartNo</option>
+												<option value="5">Qty</option>
+												<option value="6">PlantCode</option>
 
-										</select>
-									</td>
-									<td class="text-center  pe-3 min-w-100px"><input type="text" class="text-center" value="5"></td>
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+											<input type="text" class="text-center" name="FieldsList[5][StartPosition]">
+										</td>
 
 								</tr>
 							</tbody>
@@ -379,7 +389,7 @@
 				<h2 class="fw-bold">รายการประเภทข้อมูล</h2>
 				<!--end::Modal title-->
 				<!--begin::Close-->
-				<div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-users-modal-action="close" onclick="showDialogAddUser()">
+				<div class="btn btn-icon btn-sm btn-active-icon-primary"  onclick="showDialogAddUser()">
 					<i class="ki-duotone ki-cross fs-1">
 						<span class="path1"></span>
 						<span class="path2"></span>
@@ -541,6 +551,17 @@
 <!--end::popup-->
 
 <script>
+
+	const clickCheckBox=(checkbox)=>{
+		if(checkbox.checked){
+			checkbox.checked = true;
+			checkbox.value = true;
+		}else{
+			checkbox.checked = false;
+			checkbox.value = false;
+		}
+	}
+
 	const showDialogAddUser = ()=>
 	{
 		let modal = document.getElementById("modal_add_user");
@@ -556,9 +577,9 @@
 	window.onload = async () => {
 
 		const selectCustumer = document.getElementById("custumer_select");
-		const listUser = await fetch("/order/JsonUsers");
+		const listUser = await fetch("/order/JsonCustumer");
 		const users_json = await listUser.json();
-		selectCustumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="{${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected > </option>`);
+		selectCustumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected > </option>`);
 		
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
@@ -577,7 +598,9 @@
 										</i>
 									</td>
 								</tr>`,"");
-		
+
+		const select_mix = document.getElementById("select_mixSchWidth");
+		select_mix.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeName}</option>`, "<option selected value='99'>99-ไม่รวม</option>");
 	};
 
 	const addDataType = ()=>{
@@ -603,7 +626,7 @@
 	const addDataTypeCus =()=>{
 		const form = document.getElementById("data_type_form");
 		const formData = new FormData(form);
-		fetch("/Order/AddDataType").then(res => res.json()).then(data => {
+		fetch("/Order/AddCustDataType", { body: formData,method:"post" }).then(res => res.json()).then(data => {
 			if (data.msg) {
 				Swal.fire({
 					position: 'top-end',
