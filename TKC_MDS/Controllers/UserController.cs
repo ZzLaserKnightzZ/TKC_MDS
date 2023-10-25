@@ -41,7 +41,7 @@ namespace TKC_MDS.Controllers
         {
             if (string.IsNullOrEmpty(user_name) || string.IsNullOrEmpty(password))  return View();
 
-            var user = await _user.FindByIdAsync(user_name);
+            var user = await _user.FindByNameAsync(user_name);
             if (user != null) {
 				var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
                 if (result.Succeeded)
@@ -62,8 +62,11 @@ namespace TKC_MDS.Controllers
 						}
 					}
 					await _signInManager.SignInWithClaimsAsync(user, true, claims);
-					//redirect
+                    //redirect
+                    return Redirect("/order/SaveOrder");
 				}
+				ViewData["Error"] = "รหัสผ่านไม่ถูกต้อง";
+				return View();
 			}
             ViewData["Error"] = "ไม่พบ user";
             return View();
