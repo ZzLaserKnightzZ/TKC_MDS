@@ -8,6 +8,7 @@ namespace TKC_MDS.Models.DTO
 		public string CusTumerId { get; set; }
 		[Required]
 		public string DataType { get; set; }
-		public IFormFile Excell { get; set; }
+		[Required]
+		public IFormFile Excel { get; set; }
 	}
 }

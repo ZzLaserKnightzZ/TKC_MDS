@@ -1,13 +1,9 @@
 ﻿@{
 	ViewData["Title"] = "AdjustOrder";
 }
-
-
 <div id="kt_app_content" class="app-content flex-column-fluid">
 	<!--begin::Content container-->
 	<div id="kt_app_content_container" class="app-container container-xxl">
-
-
 		<!--begin::Row-->
 		<div class="row gy-5 g-xl-10">
 			<div class="col-xl-2  "></div>
@@ -89,7 +85,7 @@
 										เลขที่ Orders :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px ">
+										<select class="form-select form-select-sm form-select-solid w-200px " id="select_order">
 											<option value="1" data-select2-id="select2-data-15-z6q8">All</option>
 										</select>
 									</td>
@@ -272,6 +268,11 @@
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
-		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeName}</option>`, "<option selected></option>");
+		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
+
+		const order = await fetch("/order/JsonOrders");
+		const order_no = await order.json();
+		let select_order_no = document.getElementById("select_order");
+		select_order_no.innerHTML = order_no.reduce((prev, curr) => prev += `<option value="${curr?.ordersNo}">${curr?.custID}-${curr?.ordersNo}</option>`, "<option selected></option>");
 	}
 </script>

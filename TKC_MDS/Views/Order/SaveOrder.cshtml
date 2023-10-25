@@ -68,9 +68,10 @@
 			</form>
 			<!--end::Table-->
 			<div class="d-flex justify-content-center">
-				<a class="btn btn-sm fw-bold btn-secondary me-2">import</a>
-				<a class="btn btn-sm fw-bold btn-primary me-2">บันทึก</a>
-				<a class="btn btn-sm fw-bold btn-secondary">ล้าง / ยกเลิก</a>
+				<input type="file" id="inpu_file" accept=".text, .csv" style="display:none;"  />
+				<button onClick="importFile()" class="btn btn-sm fw-bold btn-secondary me-2" >import</button>
+				<button class="btn btn-sm fw-bold btn-primary me-2">บันทึก</button>
+				<button class="btn btn-sm fw-bold btn-danger" onclick="clearData()">ล้าง / ยกเลิก</button>
 			</div>
 
 		</div>
@@ -106,7 +107,7 @@
 					<!--end::Table row-->
 				</thead>
 				<!--end::Table head-->
-				<tbody>
+				<tbody id="table_body">
 					<tr>
 						<td class="text-start  pe-3 min-w-10px"></td>
 						<td class="text-center  pe-3 min-w-100px"></td>
@@ -150,7 +151,45 @@
 </div>
 <!--end::Col-->
 <script>
+
+	const selected_file = (e)=>{
+		const file = e.target.files[0];
+		const reader = new FileReader();
+		const seperater = ",";
+
+		reader.onload = ()=>{
+			const text = reader.result;
+			const line_text = text.split("\r\n");
+			if(line_text.length > 0){
+				const header = line_text[0].split(seperater);
+				const data = [];
+				for (let index = 1; index < line_text.length;index++){
+					data[index] = line_text[index].split(seperater);
+					console.log(data[index]);
+				}
+				for (let t of header) {
+					console.log(t);
+				}
+			}			
+		}
+		 reader.readAsText(file);
+
+	}
+
+	const clearData = ()=>{
+		let table_data = document.getElementById("table_body");
+		table_data.innerHTML = "";
+	}
+
+	const importFile = ()=>{
+		document.getElementById("inpu_file").click();
+	}
+
 	window.onload = async ()=>{
+
+		let inpu_file = document.getElementById("inpu_file");
+		inpu_file.addEventListener("change", selected_file);
+
 		let select_custumer = document.getElementById("select_custumer");
 		const listUser = await fetch("/order/JsonCustumer");
 		const users_json = await listUser.json();
@@ -159,6 +198,6 @@
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
-		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeName}</option>`, "<option selected></option>");
+		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
 	}
 </script>

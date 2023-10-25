@@ -8,7 +8,11 @@ namespace TKC_MDS.Controllers
 {
 	public class OrderController : Controller
 	{
-
+		private readonly ILogger<OrderController> _logger;
+		public OrderController(ILogger<OrderController> logger)
+		{
+			_logger = logger;
+		}
 		public IActionResult DataType()
 		{
 			return View();
@@ -27,6 +31,12 @@ namespace TKC_MDS.Controllers
 		public IActionResult Report()
 		{
 			return View();
+		}
+		
+		public async Task<IActionResult> JsonOrders()
+		{
+			var order = await Dapper_Context.QueryTableAsync<T_SchOrdersPart>("SELECT * FROM T_SchOrdersPart");
+			return Json(order);
 		}
 		public async Task<IActionResult> JsonCustumer()
 		{
@@ -53,6 +63,7 @@ namespace TKC_MDS.Controllers
 			}
 			catch (Exception ex)
 			{
+				_logger.LogError(ex.Message);
 				return Json(new { error = ex.Message });
 			}
 
@@ -80,21 +91,48 @@ namespace TKC_MDS.Controllers
 						RowManyDue = input.RowManyDue,
 						SepMDSbyFlag01 = true, // input.SepMDSbyFlag01,
 						ShowInSch = input.ShowInSch,
-						UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name :"",
+						UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
 						UpdatedDate = DateTime.UtcNow,
 						Note = input.Note
 					};
 
 					await Dapper_Context.Insert<T_SchDataType_Cust>("INSERT INTO T_SchDataType_Cust (CustID,TypeCode,DeleteOld,SepMDSbyFlag01,FirmOrder,MakeMDS,ShowInSch,MixedSchWith,UpdatedBy,UpdatedDate,RowManyDue,ManyDueType,ManyDueDataNo,ManyDueSetNo,ManyDueDataLong,ForPOS,Note) VALUES (@CustID,@TypeCode,@DeleteOld,@SepMDSbyFlag01,@FirmOrder,@MakeMDS,@ShowInSch,@MixedSchWith,@UpdatedBy,@UpdatedDate,@RowManyDue,@ManyDueType,@ManyDueDataNo,@ManyDueSetNo,@ManyDueDataLong,@ForPOS,@Note)", model);
+					//var conv_model = new T_SchFormConv
+					//{
+					//	CustId = input.CustID,
+					//	TypeCode = input.TypeCode,
+					//	Separater = input.Seperator,
+					//	RowManyDue = input.RowManyDue,
+					//	UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
+
+					//};
+					//await Dapper_Context.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
 					return Json(new { msg = "บันทึกข้อมูลเรียบร้อย" });
 				}
 				catch (Exception ex)
 				{
+					_logger.LogError(ex.Message);
 					return Json(new { error = ex.Message });
 				}
 			}
 			return Json(new { error = "กรุณากรอกข้อมูลให้ครบ" });
 
 		}
+
+		//[HttpPost]
+		//public async Task<IActionResult> SaveOrder()
+		//{
+
+		//}
+
+		//[HttpPost] 
+		//public async Task<IActionResult> ImportFile([FromForm]SaveOrder input)
+		//{
+		//	//1.exac excell
+		//	//2.save to data base
+		//	//3.return object[]
+		//}
+
+
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TKC_MDS.Data;
 using TKC_MDS.Models.DTO;
 
@@ -8,14 +9,16 @@ namespace TKC_MDS.Controllers
 {
     public class UserController : Controller
     {
-        private readonly UserManager<AppUser> _user;
+        private readonly SignInManager<AppUser> _signInManager;
+		private readonly UserManager<AppUser> _user;
         private readonly RoleManager<Roles> _role;
         private readonly MSD_Context _db;
-        public UserController(UserManager<AppUser> user, RoleManager<Roles> role,MSD_Context db)
+        public UserController(UserManager<AppUser> user, RoleManager<Roles> role,MSD_Context db,SignInManager<AppUser> signIn)
         {
             _user = user;
             _role = role;
             _db = db;
+            _signInManager = signIn;
         }
 
         public async Task<IActionResult> Index()
@@ -32,6 +35,38 @@ namespace TKC_MDS.Controllers
 			ViewData["listUser"] = users;
 
 			return View();
+        }
+
+        public async Task<IActionResult> Login(string? user_name,string? password)
+        {
+            if (string.IsNullOrEmpty(user_name) || string.IsNullOrEmpty(password))  return View();
+
+            var user = await _user.FindByIdAsync(user_name);
+            if (user != null) {
+				var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+                if (result.Succeeded)
+                {
+					var claims = new List<Claim>();
+					var rolesStr = await _user.GetRolesAsync(user);
+					if (rolesStr != null)
+					{
+						
+						foreach (var role in rolesStr)
+						{
+							var roles = await _role.FindByNameAsync(role);
+							var all_claim = await _db.ClaimRoles.AsNoTracking().Where(x => x.RoleId.Equals(Guid.Parse(roles.Id)) && x.IsAllow == true).ToListAsync();
+							foreach (var claimRole in all_claim)
+							{
+								claims.Add(new Claim(ClaimTypes.Role, claimRole.RoleName!));
+							}
+						}
+					}
+					await _signInManager.SignInWithClaimsAsync(user, true, claims);
+					//redirect
+				}
+			}
+            ViewData["Error"] = "ไม่พบ user";
+            return View();
         }
 
         [HttpPost]

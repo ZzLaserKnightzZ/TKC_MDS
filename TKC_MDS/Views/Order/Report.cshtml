@@ -162,6 +162,6 @@
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
-		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeName}</option>`, "<option selected></option>");
+		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
 	}
 </script>
