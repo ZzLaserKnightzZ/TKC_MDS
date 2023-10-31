@@ -10,6 +10,6 @@ namespace TKC_MDS.Models
         public string TypeCode { get; set; }
         public string TypeName { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedDate { get; set; }
     }
 }

@@ -19,6 +19,6 @@ namespace TKC_MDS.Models
         public string Remark { get; set; }
         public string TypeCode { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedDate { get; set; }
     }
 }

@@ -37,5 +37,6 @@ namespace TKC_MDS.Models.DTO
 	{
 		public string? Name { get; set; }
 		public int? StartPosition { get; set; }
+		public int? EndPosition { get; set;}
 	}
 }

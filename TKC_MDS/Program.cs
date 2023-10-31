@@ -8,8 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<MSD_Context>(options =>
     options.UseSqlServer(connectionString));
+
+var SalesDevConnectionString = builder.Configuration.GetConnectionString("SalDev");
+builder.Services.AddDbContext<SaleDev_Context>(options =>
+	options.UseSqlServer(SalesDevConnectionString));
+
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
