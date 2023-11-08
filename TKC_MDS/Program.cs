@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -12,9 +13,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<MSD_Context>(options =>
     options.UseSqlServer(connectionString));
 
-var SalesDevConnectionString = builder.Configuration.GetConnectionString("SalDev");
-builder.Services.AddDbContext<SaleDev_Context>(options =>
-	options.UseSqlServer(SalesDevConnectionString));
+builder.Services.AddTransient<Dapper_Context>();
+//var SalesDevConnectionString = builder.Configuration.GetConnectionString("SalDev");
+//builder.Services.AddDbContext<SaleDev_Context>(options =>
+//	options.UseSqlServer(SalesDevConnectionString));
 
 
 // Add services to the container.
@@ -55,7 +57,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    //The default HSTS value is 30 days.You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

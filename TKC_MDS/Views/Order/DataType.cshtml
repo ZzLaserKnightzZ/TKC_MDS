@@ -47,7 +47,7 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select name="TypeCode" class="form-select form-select-sm form-select-solid w-200px" id="select_data_type">
+											<select name="TypeCode" class="form-select form-select-sm form-select-solid w-200px" id="select_data_type" onchange="selectDataType(this.value)">
 										</select>
 									</td>
 									<td class="text-start pe-3 min-w-50px">
@@ -63,7 +63,7 @@
 										P/O:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select name="FirmOrder" class="form-select form-select-sm form-select-solid w-200px ">
+											<select name="FirmOrder" class="form-select form-select-sm form-select-solid w-200px " id="firm_order">
 											<option value="true" selected="selected" >Yes</option>
 											<option value="false">No</option>
 
@@ -74,14 +74,14 @@
 										:
 									</th>
 										<td class="text-start pe-3 min-w-30px"> 
-											<input type="checkbox" checked="checked" name="MakeMDS" value="true" onclick="clickCheckBox(this)">
+											<input type="checkbox" checked="checked" name="MakeMDS" value="true" id="make_mds" onclick="clickCheckBox(this)" >
 										</td>
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ใช้พิมพ์POS
 										:
 									</th>
 										<td class="text-start pe-3 min-w-30px">
-											<input type="checkbox" checked="checked" name="ForPOS" value="true" onclick="clickCheckBox(this)">
+											<input type="checkbox" checked="checked" name="ForPOS" value="true" id="for_pos" onclick="clickCheckBox(this)" >
 										</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
@@ -89,7 +89,7 @@
 										แสดงในรายงานMDS :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select class="form-select form-select-sm form-select-solid w-200px " name="ShowInSch">
+											<select class="form-select form-select-sm form-select-solid w-200px " name="ShowInSch" id="show_in_sch">
 											<option value="true" selected="selected" >Yes</option>
 											<option value="false">No</option>
 
@@ -116,7 +116,7 @@
 										ลบข้อมูลก่อนนำเข้า :
 									</th>
 									<td class="text-start pe-3 min-w-30px text-danger">
-											<input type="checkbox" checked="checked" name="DeleteOld" value="true" onclick="clickCheckBox(this)">
+										<input type="checkbox" checked="checked" name="DeleteOld" value="true" onclick="clickCheckBox(this)" id="delete_old">
 										*ลบข้อมูลเก่าที่ชื่อไฟล์เหมือนกัน
 									</td>
 								</tr>
@@ -124,9 +124,9 @@
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										หนึ่งแถวข้อมูลมีหลายDue :
 									</th>
-										<td class="text-start pe-3 min-w-30px"> 
-											<input type="checkbox" checked="checked" name="RowManyDue" value="true" onclick="clickCheckBox(this)">
-										</td>
+									<td class="text-start pe-3 min-w-30px"> 
+										<input type="checkbox"  name="RowManyDue" value="false" id="row_many_due" onclick="clickCheckBox(this)" onchange="have_many_due(this.value)">
+									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7  gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
@@ -149,32 +149,32 @@
 									</td>
 								</tr>
 
-								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0" id="has_many_due" style="display:none;" >
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										จำนวนของข้อมูลใน 1 ชุด
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<input class="form-control" type="text" name="ManyDueDataLong" style="width: 50%;">
+											<input class="form-control" type="text" name="ManyDueDataLong" id="ManyDueDataLong" style="width: 50%;">
 									</td>
 								</tr>
-								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+									<tr class="text-start  fw-bold fs-7 text-uppercase gs-0" id="has_many_due" style="display:none;">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										จำนวนของชุดข้อมูลใน 1 แถว
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<input class="form-control" type="text" name="ManyDueDataNo" style="width: 50%;">
+											<input class="form-control" type="text" name="ManyDueDataNo" id="ManyDueDataNo" style="width: 50%;">
 									</td>
 								</tr>
-								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+									<tr class="text-start  fw-bold fs-7 text-uppercase gs-0 " id="has_many_due" style="display:none;">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ความยาวตัวอักษรของข้อมูล
 										1 ชุด
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<input class="form-control " type="text" name="ManyDueSetNo" style="width: 50%;">
+											<input class="form-control " type="text" name="ManyDueSetNo" id="ManyDueSetNo" style="width: 50%;">
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
@@ -183,7 +183,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select class="form-select form-select-sm form-select-solid w-200px" name="HaveSeperator">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="HaveSeperator" id="have_seperater">
 											<option value="true" selected="selected" >
 												แถวข้อมูลมีตัวคั่นเช่น , | Tab
 											</option>
@@ -193,12 +193,14 @@
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
-									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
+									<th class="text-end  text-gray-400 pe-3 min-w-100px">ประเภทไฟล์
+										:</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select class="form-select form-select-sm form-select-solid w-200px" name="Seperator">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="Seperator" id="Seperator">
 											<option value="," selected="selected">,</option>
 											<option value="|">|</option>
 											<option value="Tab">Tab</option>
+											<option value="">ไม่มีตัวขั้น</option>
 
 										</select>
 									</td>
@@ -209,7 +211,7 @@
 											:
 										</th>
 										<td class="text-end pe-3 min-w-50px">
-											<input class="form-control " type="text" name="Note">
+											<input class="form-control " type="text" name="Note" id="Note">
 										</td>
 									</tr>
 								<!--end::Table row-->
@@ -220,7 +222,7 @@
 						<!--end::Table-->
 						<div class="d-flex justify-content-center">
 							<a class="btn btn-sm fw-bold btn-primary me-2" onclick="addDataTypeCus()">บันทึก</a>
-							<a class="btn btn-sm fw-bold btn-secondary me-2">ยกเลิก</a>
+							<a class="btn btn-sm fw-bold btn-secondary me-2" onclick="cancle()">ยกเลิก</a>
 						</div>
 
 					</div>
@@ -239,7 +241,7 @@
 										ชุดข้อมูล(นับจาก0)
 									</th>
 									<th class="text-center  text-gray-400 pe-3 min-w-100px">
-										ตำแหน่งสิ้นสุด(สำหรับไม่มีตัวขั้น)
+										จำนวนอีกกี่ตำแหน่ง(สำหรับไม่มีตัวขั้น)
 									</th>
 
 								</tr>
@@ -442,14 +444,19 @@
 <!--end::popup-->
 
 <script>
+	var IS_NEW_TYPE=true;
+
+	const cancle = ()=>{
+		window.location.reload();
+	}
 
 	const clickCheckBox=(checkbox)=>{
 		if(checkbox.checked){
 			checkbox.checked = true;
-			checkbox.value = true;
+			checkbox.value = "true";
 		}else{
 			checkbox.checked = false;
-			checkbox.value = false;
+			checkbox.value = "false";
 		}
 	}
 
@@ -462,6 +469,14 @@
 
 		}else{
 			modal.style.display = "none";
+		}
+	}
+
+	const have_many_due = (value)=>{
+		if (value == "true"){
+			document.querySelectorAll("#has_many_due").forEach(el => { el.style.display = ""; });
+		}else{
+			document.querySelectorAll("#has_many_due").forEach(el => { el.style.display = "none"; });
 		}
 	}
 
@@ -484,8 +499,8 @@
 		const table_body = document.getElementById("select_body");
 		let field = "";
 		for(let count=0; count < 20;count++){
-			field += `								<tr>
-											<td class="text-start  pe-3 min-w-10px">${count}</td>
+			field += `					<tr>
+										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
 										<td class="text-center  pe-3 min-w-100px">
 													<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
 													<option  selected=""></option>
@@ -505,8 +520,8 @@
 													<option >Flag08</option>
 													<option >Flag09</option>
 													<option >Flag10</option>
-													<option >ImportByCoding</option>
-													<option >OrderNo</option>
+													<option >Import By Coding</option>
+													<option >OrdersNo</option>
 													<option >PartNo</option>
 													<option >Period</option>
 													<option >PlantCode</option>
@@ -578,20 +593,309 @@
 	const addDataTypeCus =()=>{
 		const form = document.getElementById("data_type_form");
 		const formData = new FormData(form);
-		fetch("/Order/AddCustDataType", { body: formData,method:"post" }).then(res => res.json()).then(data => {
-			if (data.msg) {
-				Swal.fire({
-					position: 'top-end',
-					icon: 'success',
-					title: data.msg,
-					showConfirmButton: false,
-					timer: 1500
-				}).then(resault => {
-					window.location.reload();
-				});
-			} else {
-				Swal.fire('Error > ' + data.error);
-			}
-		}).catch(error => console.log(error));
+		if(IS_NEW_TYPE){
+			fetch("/Order/AddCustDataType", { body: formData,method:"post" }).then(res => res.json()).then(data => {
+				if (data.msg) {
+					Swal.fire({
+						position: 'top-end',
+						icon: 'success',
+						title: data.msg,
+						showConfirmButton: false,
+						timer: 1500
+					}).then(resault => {
+						window.location.reload();
+					});
+				} else {
+					Swal.fire('Error > ' + data.error);
+				}
+			}).catch(error => console.log(error));
+		}else{
+			fetch("/Order/UpdateDataType", { body: formData,method:"post" }).then(res => res.json()).then(data => {
+				if (data.msg) {
+					Swal.fire({
+						position: 'top-end',
+						icon: 'success',
+						title: data.msg,
+						showConfirmButton: false,
+						timer: 1500
+					}).then(resault => {
+						window.location.reload();
+					});
+				} else {
+					Swal.fire('Error > ' + data.error);
+				}
+			}).catch(error => console.log(error));
+		}
+
 	}
+
+	const selectDataType = (typeId)=>{
+		const selectCustumer = document.getElementById("custumer_select");
+		fetch("/order/JsonGetDataType?custId=" + selectCustumer.value + "&dataTypeId="+typeId)
+		.then(res => res.json())
+		.then(data => {
+			console.log(data);
+			if(data.dataType){
+				
+
+				//firmorder
+				let firm_order = document.getElementById("firm_order");
+				if(data.dataType?.firmOrder){
+					firm_order.innerHTML = `<option value="true" selected="selected" >Yes</option>
+											<option value="false">No</option>`;
+				}else
+				{
+					firm_order.innerHTML = `<option value="true"  >Yes</option>
+											<option value="false" selected="selected">No</option>`;
+				}
+
+				//make mds
+				let make_mds = document.getElementById("make_mds");
+				if(data.dataType?.makeMDS){
+					make_mds.checked = true;
+				}else{
+					make_mds.checked = false;
+				}
+
+				//for pos
+				let forpos = document.getElementById("for_pos");
+				if(data.dataType?.forPOS){
+					forpos.checked = true;
+					forpos.value = "true";
+				}else{
+					forpos.checked = false;
+					forpos.value = "false";
+				}
+
+				//showinsch 
+				let show_In_sch = document.getElementById("show_in_sch");
+				if(data.dataType?.showInSch){
+					show_In_sch.innerHTML = `<option value="true" selected="selected" >Yes</option>
+											<option value="false">No</option>`;
+				}else
+				{
+					show_In_sch.innerHTML = `<option value="true"  >Yes</option>
+											<option value="false" selected="selected">No</option>`;
+				}
+
+				//select mixSchWidth
+				document.getElementById("select_mixSchWidth")
+				.querySelectorAll("option").forEach(option => {
+					if(data.dataType?.mixedSchWith === option.value){
+						option.selected = true;
+					}else{
+						option.selected = false;
+					}
+				});
+
+				//delete_old
+				let delete_old = document.getElementById("delete_old");
+				if(data.dataType?.deleteOld){
+					delete_old.checked = true;
+				}else{
+					delete_old.checked = false;
+				}
+
+				//row_many_due
+				let row_many_due = document.getElementById("row_many_due");
+				if(data.dataType?.rowManyDue){
+					row_many_due.checked = true;
+				}else{
+					row_many_due.checked = false;
+				}
+
+				//manyDueType
+				document.querySelectorAll('input[name="manyDueType"]')
+				.forEach(radio => {
+					if(data.dataType?.manyDueType === radio.value){
+						radio.checked = true;
+					}else{
+						radio.checked = true;
+					}
+				});
+
+				
+				if(data.dataType?.rowManyDue){
+					 have_many_due("true");
+					 document.getElementById("ManyDueDataLong").value = data.dataType?.manyDueDataLong;
+					 document.getElementById("ManyDueDataNo").value = data.dataType?.manyDueDataNo;
+					 document.getElementById("ManyDueSetNo").value = data.dataType?.manyDueSetNo;
+				}else{
+					have_many_due("false");
+					 document.getElementById("ManyDueDataLong").value = data.dataType?.manyDueDataLong;
+					 document.getElementById("ManyDueDataNo").value = data.dataType?.manyDueDataNo;
+					 document.getElementById("ManyDueSetNo").value = data.dataType?.manyDueSetNo;
+				}
+
+				//showinsch 
+				let seperater = document.getElementById("have_seperater");
+				if(data.dataType?.sepMDSbyFlag01){
+					seperater.innerHTML = `<option value="true" selected="selected" >
+												แถวข้อมูลมีตัวคั่นเช่น , | Tab
+											</option>
+											<option value="false">เป็นแถวข้อมูลที่ไม่มีตัวคั่น</option>`;
+				}else
+				{
+					seperater.innerHTML = `<option value="true"  >
+												แถวข้อมูลมีตัวคั่นเช่น , | Tab
+											</option>
+											<option value="false" selected="selected">เป็นแถวข้อมูลที่ไม่มีตัวคั่น</option>`;
+				}
+
+				document.getElementById("Seperator")
+				.querySelectorAll("option").forEach(option => {
+					if(data?.form.length > 0){
+						if(data.form[0].separater === option.value){
+							option.selected = true;
+						}else{
+							option.selected = false;
+						}
+						if((data.form[0].separater == "" || data.form[0].separater == null) && option.value == "")
+							option.selected = true;
+					}
+				});
+
+				//note
+				document.getElementById("Note").value = data.dataType?.note;
+
+				//field
+				let count = 0;
+				const table_body = document.getElementById("select_body");
+				const field_option = ["","DueDate-DMY","DueDate-Dชื่อย่อYY","DueDate-Dชื่อย่อYYYY","DueDate-MDY","DueDate-YMD","DueTime","Flag01","Flag02","Flag03","Flag04","Flag05","Flag06","Flag07","Flag08","Flag09","Flag10","Import By Coding","OrdersNo","PartNo","Period","PlantCode","PONo","Qty","กำหนด Dueโดย TKC"];
+				let field = data.form.reduce((prev,curr)=> prev+=`
+										<tr>
+										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
+										<td class="text-center  pe-3 min-w-100px">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
+												${field_option.reduce((prev1,curr1)=> prev1 += ( curr1 == curr?.fieldName ? `<option  selected="selected">${curr1}</option>`:`<option >${curr1}</option>`) ,"")}
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+													<input type="text" class="text-center" value="${curr?.startPosition}" name="FieldsList[${count}][StartPosition]">
+										</td>
+											<td class="text-center pe-3 min-w-100px">
+													<input type="text" class="text-center" value="${curr?.dataSize}" name="FieldsList[${count++}][EndPosition]">
+											</td>
+									</tr>` ,"");
+
+				for(let counter=count; counter < 20;counter++){
+					field += `					<tr>
+												<td class="text-start  pe-3 min-w-10px">${counter+1}<input type="hidden" name="FieldsList[${counter}][FieldId]"" value="${counter+1}"> </td>
+												<td class="text-center  pe-3 min-w-100px">
+															<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${counter}][Name]" onchange="check_select_change(this.value)">
+															<option  selected=""></option>
+															<option >DueDate-DMY</option>
+															<option >DueDate-Dชื่อย่อYY</option>
+															<option >DueDate-Dชื่อย่อYYYY</option>
+															<option >DueDate-MDY</option>
+															<option >DueDate-YMD</option>
+															<option >DueTime</option>
+															<option >Flag01</option>
+															<option >Flag02</option>
+															<option >Flag03</option>
+															<option >Flag04</option>
+															<option >Flag05</option>
+															<option >Flag06</option>
+															<option >Flag07</option>
+															<option >Flag08</option>
+															<option >Flag09</option>
+															<option >Flag10</option>
+															<option >Import By Coding</option>
+															<option >OrdersNo</option>
+															<option >PartNo</option>
+															<option >Period</option>
+															<option >PlantCode</option>
+															<option >PONo</option>
+															<option >Qty</option>
+															<option>กำหนด Dueโดย TKC</option>
+
+													</select>
+												</td>
+												<td class="text-center pe-3 min-w-100px">
+															<input type="text" class="text-center" name="FieldsList[${counter}][StartPosition]">
+												</td>
+													<td class="text-center pe-3 min-w-100px">
+															<input type="text" class="text-center" name="FieldsList[${counter}][EndPosition]">
+													</td>
+											</tr>`;
+				}
+
+				table_body.innerHTML = field;
+				IS_NEW_TYPE = false;
+				/*
+				-custID: "4003"
+				​​
+					deleteOld: false
+				​​
+					firmOrder: false
+				​​
+					forPOS: true
+				​​
+					makeMDS: true
+				​​
+					manyDueDataLong: 0
+				​​
+					manyDueDataNo: 0
+				​​
+					manyDueSetNo: 0
+				​​
+					manyDueType: false
+				​​
+					mixedSchWith: "99"
+				​​
+					note: "TYPE order F เท่านั้น "
+				​​
+					rowManyDue: false
+				​​
+					sepMDSbyFlag01: true
+				​​
+					showInSch: true
+				​​
+				-typeCode: "22"
+				​​
+				updatedBy: "5500406"
+				​​
+				updatedDate: "03/16/2015 10:32:42"
+				*/
+
+				/*
+				​​
+				-custId: "4003"
+				​​​
+					dataSize: null
+				​​​
+				*dataType: false
+				​​​
+				-fieldId: 1
+				​​​
+					fieldName: "OrdersNo"
+				​​​
+					formType: "SPECIAL#2"
+				​​​
+				remark: null
+				​​​
+				rowManyDue: false
+				​​​
+					separater: ","
+				​​​
+					startPosition: 0
+				​​​
+				-typeCode: "22"
+				​​​
+				+updatedBy: "5500406"
+				​​​
+				+updatedDate: "03/16/2015 10:32:42"
+				*/
+
+			}else{
+				IS_NEW_TYPE = true;
+			}
+		})
+		.catch(error => 
+			{
+				console.log(error);
+				IS_NEW_TYPE = true;
+			});
+	}
+
 </script>

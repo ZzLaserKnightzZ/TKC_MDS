@@ -40,11 +40,11 @@
 									</th>
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer">
-											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-k22b">
+											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-k22b">
 												เลือกลูกค้า
 											</option>
 											<option value="1">4302-MITSUBISHI P/C</option>
-											<option value="2">4303-TOYOTA </option>
+											<option value="2">4303-TOYOTA </option>*@
 
 										</select>
 									</td>
@@ -52,10 +52,10 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType">
-											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-0afp"></option>
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" onchange="selectOrder(this.value)">
+											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-0afp"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
-											<option value="2">4303-TOYOTA </option>
+											<option value="2">4303-TOYOTA </option>*@
 										</select>
 									</td>
 								</tr>
@@ -109,6 +109,7 @@
 										</select>
 									</td>
 								</tr>
+								@*
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ระบุพาร์ท :
@@ -138,7 +139,7 @@
 											กำหนดโมเดล
 										</button>
 									</th>
-								</tr>
+								</tr>*@
 
 								<!--end::Table row-->
 								<!--end::Table head-->
@@ -259,6 +260,20 @@
 	<!--end::Content container-->
 </div>
 <script>
+	const ALL_ORDER = [];
+
+	const selectOrder = (dataTypeId)=>{
+		let select_custumer = document.getElementById("select_custumer");
+		//fetch dataType 
+		fetch("/order/JsonAdjOrder?custId=" + select_custumer.value + "&dataTypeId=" + dataTypeId)
+		.then(res => res.json())
+		.then(data => {
+				ALL_ORDER = data;
+			console.log(data);
+		})
+		.catch(error => console.log(error))
+	}
+
 	window.onload = async () => {
 		let select_custumer = document.getElementById("select_custumer");
 		const listUser = await fetch("/order/JsonCustumer");
@@ -269,10 +284,12 @@
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
 		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
-
+		/*
 		const order = await fetch("/order/JsonOrders");
 		const order_no = await order.json();
+		//console.log(order_no);
 		let select_order_no = document.getElementById("select_order");
 		select_order_no.innerHTML = order_no.reduce((prev, curr) => prev += `<option value="${curr?.ordersNo}">${curr?.custID}-${curr?.ordersNo}</option>`, "<option selected></option>");
+		*/
 	}
 </script>

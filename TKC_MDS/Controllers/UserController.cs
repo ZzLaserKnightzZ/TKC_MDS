@@ -91,10 +91,7 @@ namespace TKC_MDS.Controllers
                     {
                         return Json(new { msg = "สร้าง user ไหม่เรียบร้อย" });
                     }
-                    else
-                    {
-						return Json(new { error = "เกิดข้อผิดพลาด" });
-					}
+					return Json(new { error = "เกิดข้อผิดพลาด" });
                 }
                 return Json(new {error="เกิดข้อผิดพลาด"});
 			}

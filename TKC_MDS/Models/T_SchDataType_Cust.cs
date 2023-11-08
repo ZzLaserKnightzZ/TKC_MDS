@@ -16,7 +16,7 @@ namespace TKC_MDS.Models
         public bool ShowInSch { get; set; }
         public string MixedSchWith { get; set; }
         public string UpdatedBy { get; set; }
-        public string UpdatedDate { get; set; } = DateTime.Now.ToString("yyyy-mm-dd HH:mm:ss");
+        public string UpdatedDate { get; set; }
         public bool RowManyDue { get; set; }
         public bool ManyDueType { get; set; }
         public int ManyDueDataNo { get; set; }

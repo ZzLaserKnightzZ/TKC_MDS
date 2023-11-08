@@ -172,11 +172,11 @@
 				//กำหนดค่าของ header
 				let title = document.getElementById("title_head");
 					title.innerHTML = FILLTER_COLUMN_BY_TYPE.reduce((prev, curr) => prev += `<th class="text-center  text-gray-400 pe-3 min-w-100px">${curr?.field}</th>`, "");
-
+				console.log("cols type",FILLTER_COLUMN_BY_TYPE);
 				const text = reader.result; //อ่านไฟ
 				const line_text = text.split("\r\n"); //แยกแถว
 
-				if (SEPERATER === null){ //ไม่มีตัวขั้น
+				if (SEPERATER === null || SEPERATER === "") { //ไม่มีตัวขั้น
 					if (line_text.length > 0) {
 						const row = [];
 						for (let index = 0; index < line_text.length; index++){ //แยกข้อมูลจากแถว
@@ -184,29 +184,63 @@
 						}
 
 						//for check each cols
-						const regxDate = new RegExp("([0-9]+/[0-9]+/[0-9]+)|([0-9]+\-[0-9]+\-[0-9]+)");
+						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)");
 						const dueDate = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field.startsWith("DueDate"));
 						const partNo = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "PartNo");
 						const qty = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "Qty");
 						let newRow = [];
 						row.forEach(cols => {
 							try {
-								if (regxDate.test(cols[dueDate]) === true && cols[partNo] !== "" && Number(cols[qty]) > 0) {
+								if (regxDate.test(cols[dueDate]) === true && cols[partNo] !== "" && Number(cols[qty]) > 0) { //กรองฟอร์มต้องมี3ค่านี้
+									//dueDate type
+									const dueDateFormat = FILLTER_COLUMN_BY_TYPE.find(_ => _.field.startsWith("DueDate"));
+									let dueDate_format = "";
+									let date = null;
+									let mount = null;
+									if (dueDateFormat) {
+										//format ทั้งหมดเป็น mm/dd/yyyy
+										switch (dueDateFormat.field) {
+											case "DueDate-DMY":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[1]}/${date[0]}/${Number(date[2])}`;
+												break;
+											case "DueDate-Dชื่อย่อYY":
+												date = cols[dueDate].split(" ");
+												mount = getMount(date[1]);
+												dueDate_format = `${mount}/${date[0]}/${Number(date[2]) + 2000}`;
+												break;
+											case "DueDate-Dชื่อย่อYYYY":
+												date = cols[dueDate].split(" ");
+												mount = getMount(date[1]);
+												dueDate_format = `${mount}/${date[0]}/${Number(date[2])}`;
+												break;
+											case "DueDate-MDY":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[0]}/${date[1]}/${Number(date[2])}`;
+												break;
+											case "DueDate-YMD":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[1]}/${date[2]}/${Number(date[0])}`;
+												break;
+										}
+										//console.log("dueDate", dueDate_format);
+										cols[dueDate] = dueDate_format;//เปลี่ยนฟอแมทเรียบร้อยเเล้ว
+									}
 									newRow.push(cols);
 								}
 							} catch (ex) {
 								console.log(ex);
 							}
-
 						});
-
+						console.log("found row",row);
+						console.log("filter by DueDate  PartNo Qty", newRow);
 						let body = document.getElementById("table_body");
 						body.innerHTML = row.reduce((prev, curr) => prev += `<tr>${curr?.reduce((prev1, curr1) => prev1 += `<td class="text-center  pe-3 min-w-100px">${curr1}</td>`, "")}</tr>`, "");
 
 						const custId = document.getElementById("select_custumer").value;
 						form = newRow.reduce((prev, curr, i) => prev += `<input type = "hidden" name = "[${i}][CustID]" value = "${custId}" >\r\n
 																			<input type = "hidden" name = "[${i}][DataFileName]" value = "${file.name}" >\r\n
-																				<input type = "hidden" name = "[${i}][DataType]" value = "${FILLTER_COLUMN_BY_TYPE[0]?.dataType}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.includes("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
+																					<input type = "hidden" name = "[${i}][DataType]" value = "${document.getElementById("select_dataType").value}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.includes("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
 						//console.log(form);
 						document.getElementById("form_saveData").innerHTML = form;
 
@@ -223,7 +257,7 @@
 						}
 
 						//for check each cols
-						const regxDate = new RegExp("([0-9]+/[0-9]+/[0-9]+)|([0-9]+\-[0-9]+\-[0-9]+)");
+						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)");
 						const dueDate = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field.startsWith("DueDate"));
 						const partNo = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "PartNo");
 						const qty = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "Qty");
@@ -232,6 +266,40 @@
 							row.forEach( cols => {
 								try{
 									if (regxDate.test(cols[dueDate]) === true && cols[partNo] !== "" && Number(cols[qty]) > 0) {
+									//dueDate type
+									const dueDateFormat = FILLTER_COLUMN_BY_TYPE.find(_ => _.field.startsWith("DueDate"));
+									let dueDate_format = "";
+									let date = null;
+									let mount = null;
+									if (dueDateFormat) {
+										//format ทั้งหมดเป็น mm/dd/yyyy
+										switch (dueDateFormat.field) {
+											case "DueDate-DMY":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[1]}/${date[0]}/${Number(date[2])}`;
+												break;
+											case "DueDate-Dชื่อย่อYY":
+												date = cols[dueDate].split(" ");
+												mount = getMount(date[1]);
+												dueDate_format = `${mount}/${date[0]}/${Number(date[2]) + 2000}`;
+												break;
+											case "DueDate-Dชื่อย่อYYYY":
+												date = cols[dueDate].split(" ");
+												mount = getMount(date[1]);
+												dueDate_format = `${mount}/${date[0]}/${Number(date[2])}`;
+												break;
+											case "DueDate-MDY":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[0]}/${date[1]}/${Number(date[2])}`;
+												break;
+											case "DueDate-YMD":
+												date = cols[dueDate].split("/");
+												dueDate_format = `${date[1]}/${date[2]}/${Number(date[0])}`;
+												break;
+										}
+										//console.log("dueDate", dueDate_format);
+										cols[dueDate] = dueDate_format;//เปลี่ยนฟอแมทเรียบร้อยเเล้ว
+									}
 										newRow.push(cols);
 									}
 								}catch(ex){
@@ -240,10 +308,12 @@
 
 							});
 
+						console.log("found row", row);
+						console.log("filter by DueDate  PartNo Qty", newRow);
 						const custId = document.getElementById("select_custumer").value;
 						form = newRow.reduce((prev, curr, i) => prev += `<input type = "hidden" name = "[${i}][CustID]" value = "${custId}" >\r\n
 																		<input type = "hidden" name = "[${i}][DataFileName]" value = "${file.name}" >\r\n
-																		<input type = "hidden" name = "[${i}][DataType]" value = "${FILLTER_COLUMN_BY_TYPE[0]?.dataType}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
+																			<input type = "hidden" name = "[${i}][DataType]" value = "${document.getElementById("select_dataType").value}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
 						//console.log(form);
 						document.getElementById("form_saveData").innerHTML = form;
 
@@ -309,6 +379,7 @@
 
 		if (select_custumer.value && type_code) {
 			fetch("/order/JsonFormConv?custId=" + select_custumer.value + "&typeCode="+type_code).then(res => res.json()).then(data => {
+				console.log(data);
 				if(data.length > 0){
 					SEPERATER = (data[0].separater === "Tab" ? "\t" : data[0].separater);
 					FILLTER_COLUMN_BY_TYPE = data.map(formConv => {
@@ -340,5 +411,44 @@
 		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
 		select_dataType.addEventListener("change", selectedDataType);
 	
+	}
+
+	const getMount = (mountName) => {
+		if (mountName.includes("่jan")) {
+			return "01";
+		}
+		else if (mountName.includes("feb")) {
+			return "02";
+		}
+		else if (mountName.includes("mar")) {
+			return "03";
+		}
+		else if (mountName.includes("apr")) {
+			return "04";
+		}
+		else if (mountName.includes("may")) {
+			return "05";
+		}
+		else if (mountName.includes("jun")) {
+			return "06";
+		}
+		else if (mountName.includes("jul")) {
+			return "07";
+		}
+		else if (mountName.includes("aug")) {
+			return "08";
+		}
+		else if (mountName.includes("sep")) {
+			return "09";
+		}
+		else if (mountName.includes("oct")) {
+			return "10";
+		}
+		else if (mountName.includes("nov")) {
+			return "11";
+		}
+		else if (mountName.includes("dec")) {
+			return "12";
+		}
 	}
 </script>

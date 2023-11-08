@@ -11,14 +11,14 @@ namespace TKC_MDS.Models
         public bool? DataType { get; set; }
         public bool? RowManyDue { get; set; }
         public byte? FieldId { get; set; }
-        public string FieldName { get; set; }
+        public string? FieldName { get; set; }
         public short? StartPosition { get; set; }
         public short? DataSize { get; set; }
-        public string Separater { get; set; }
-        public string FormType { get; set; }
-        public string Remark { get; set; }
-        public string TypeCode { get; set; }
-        public string UpdatedBy { get; set; }
-        public DateTime UpdatedDate { get; set; }
-    }
+        public string? Separater { get; set; }
+        public string? FormType { get; set; }
+        public string? Remark { get; set; }
+        public string? TypeCode { get; set; }
+        public string? UpdatedBy { get; set; }
+        public string UpdatedDate { get; set; } 
+	}
 }

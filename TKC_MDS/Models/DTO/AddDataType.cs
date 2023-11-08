@@ -10,21 +10,17 @@ namespace TKC_MDS.Models.DTO
 		[Required]
 		public string TypeCode { get; set; }
 		public bool DeleteOld { get; set; }
-		//public bool SepMDSbyFlag01 { get; set; } //ไม่มี
 		public bool FirmOrder { get; set; }
 		public bool MakeMDS { get; set; }
 		public bool ShowInSch { get; set; }
-		//[Required]
 		public string? MixedSchWith { get; set; }
-		//[Required]
-		//public string UpdatedBy { get; set; }
-		//public DateTime UpdatedDate { get; set; } = DateTime.UtcNow;
 		public bool RowManyDue { get; set; }
 		public bool ManyDueType { get; set; }
 		public int ManyDueDataNo { get; set; }
 		public int ManyDueSetNo { get; set; }
 		public int ManyDueDataLong { get; set; }
-		public bool? ForPOS { get; set; }
+		public bool ForPOS { get; set; }
+		[Required]
 		public string? Note { get; set; }
 		//table ...conv
 		public bool HaveSeperator { get; set; }
@@ -36,7 +32,8 @@ namespace TKC_MDS.Models.DTO
 	public class  Field
 	{
 		public string? Name { get; set; }
-		public int? StartPosition { get; set; }
-		public int? EndPosition { get; set;}
+		public short? StartPosition { get; set; }
+		public short? EndPosition { get; set;}
+		public int? FieldId { get; set; }
 	}
 }

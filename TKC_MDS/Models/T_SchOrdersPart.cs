@@ -25,7 +25,7 @@ namespace TKC_MDS.Models
 		public string DataType { get; set; }
 		public bool? Status { get; set; }
 		public string ImportBy { get; set; }
-		public string ImportDate { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+		public string ImportDate { get; set; } = string.Empty;
 		public bool? FirmOrder { get; set; }
 		public bool? Exported { get; set; }
 		public string InvcNo { get; set; }
