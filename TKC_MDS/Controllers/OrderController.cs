@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -139,7 +140,7 @@ namespace TKC_MDS.Controllers
 					ManyDueType = input.ManyDueType,
 					MixedSchWith = input.MixedSchWith,
 					RowManyDue = input.RowManyDue,
-					SepMDSbyFlag01 = true,
+					SepMDSbyFlag01 = input.SepMDSbyFlag01,
 					ShowInSch = input.ShowInSch,
 					UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
 					Note = input.Note,
@@ -170,12 +171,21 @@ namespace TKC_MDS.Controllers
 							};
 							try
 							{
-								//ไม่บันทึก 1.DataType  2.FormType  3.Remark
-								await _dapperContext.Update<T_SchFormConv>($"UPDATE T_SchFormConv SET RowManyDue = @RowManyDue,FieldId = @FieldId,FieldName = @FieldName,StartPosition = @StartPosition,DataSize = @DataSize,Separater = @Separater,UpdatedBy = @UpdatedBy,UpdatedDate = @UpdatedDate WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';", conv_model);
+								var formDb = await _dapperContext.QueryTableAsync<T_SchFormConv>($"SELECT * FROM T_SchFormConv WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';");
+								if(formDb.Count() > 0)
+								{
+									//ไม่บันทึก 1.DataType  2.FormType  3.Remark
+									await _dapperContext.Update<T_SchFormConv>($"UPDATE T_SchFormConv SET RowManyDue = @RowManyDue,FieldId = @FieldId,FieldName = @FieldName,StartPosition = @StartPosition,DataSize = @DataSize,Separater = @Separater,UpdatedBy = @UpdatedBy,UpdatedDate = @UpdatedDate WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';", conv_model);
+								}
+								else
+								{
+									await _dapperContext.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
+								}
+
 							}
 							catch (Exception ex)
 							{
-								await _dapperContext.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
+								return Json(new { error = ex.Message });
 							}
 
 						}
@@ -198,8 +208,8 @@ namespace TKC_MDS.Controllers
 		[HttpPost]
 		public async Task<IActionResult> AddCustDataType([FromForm] AddDataType input)
 		{
-			if (ModelState.IsValid)
-			{
+			//if (ModelState.IsValid)
+			//{
 				try
 				{
 					var model = new T_SchDataType_Cust
@@ -216,7 +226,7 @@ namespace TKC_MDS.Controllers
 						ManyDueType = input.ManyDueType,
 						MixedSchWith = input.MixedSchWith,
 						RowManyDue = input.RowManyDue,
-						SepMDSbyFlag01 = true,
+						SepMDSbyFlag01 = input.SepMDSbyFlag01,
 						ShowInSch = input.ShowInSch,
 						UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
 						Note = input.Note,
@@ -261,8 +271,8 @@ namespace TKC_MDS.Controllers
 					_logger.LogError(ex.Message);
 					return Json(new { error = ex.Message });
 				}
-			}
-			return Json(new { error = "กรุณากรอกข้อมูลให้ครบ" });
+			//}
+			//return Json(new { error = "กรุณากรอกข้อมูลให้ครบ" });
 
 		}
 
@@ -320,6 +330,63 @@ namespace TKC_MDS.Controllers
 		public async Task<IActionResult> JsonAdjOrder(string? custId, string? dataTypeId)
 		{
 			return Json(await _dapperContext.QueryTableAsync<T_SchOrdersPart>($"SELECT * FROM T_SchOrdersPart WHERE CustID={custId} AND DataType={dataTypeId}"));
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> CancelOrder(string custId,string dataType,string orderNo,string po,string partNo)
+		{
+			var date = DateTime.Now;
+			if(!string.IsNullOrEmpty(orderNo) && !string.IsNullOrEmpty(po) && !string.IsNullOrEmpty(partNo))//IsNullOrEmpty for all
+			{
+				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
+				return Json(new { msg = "แก้ไขเรียบร้อย" });
+			}
+			if (!string.IsNullOrEmpty(orderNo) && !string.IsNullOrEmpty(po))
+			{
+				var v= await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
+				return Json(new { msg = "แก้ไขเรียบร้อย" });
+			}
+			if (!string.IsNullOrEmpty(orderNo))
+			{
+				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" });
+			}
+			if (!string.IsNullOrEmpty(po))
+			{
+				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" });
+			}
+			if (!string.IsNullOrEmpty(partNo))
+			{
+				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" });
+			}
+			return Json(new {error = "ไม่พบข้อมูล"});
+		}
+
+		public async Task<IActionResult> SlideIn()
+		{
+			try
+			{
+
+			}catch(Exception ex)
+			{
+
+			}
+
+			return Ok();
+		}
+		public async Task<IActionResult> SlideOut()
+		{
+			try
+			{
+
+			}
+			catch (Exception ex)
+			{
+
+			}
+			return Ok();
 		}
 	}
 }

@@ -20,10 +20,11 @@ namespace TKC_MDS.Models.DTO
 		public int ManyDueSetNo { get; set; }
 		public int ManyDueDataLong { get; set; }
 		public bool ForPOS { get; set; }
+		public bool SepMDSbyFlag01 { get; set; }
 		[Required]
 		public string? Note { get; set; }
 		//table ...conv
-		public bool HaveSeperator { get; set; }
+		//public bool HaveSeperator { get; set; }
 		public string Seperator { get; set; }
 
 		public List<Field>? FieldsList { get; set; }

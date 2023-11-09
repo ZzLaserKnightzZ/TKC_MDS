@@ -183,7 +183,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select class="form-select form-select-sm form-select-solid w-200px" name="HaveSeperator" id="have_seperater">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="SepMDSbyFlag01" id="have_seperater">
 											<option value="true" selected="selected" >
 												แถวข้อมูลมีตัวคั่นเช่น , | Tab
 											</option>
@@ -496,50 +496,7 @@
 
 	window.onload = async () => {
 
-		const table_body = document.getElementById("select_body");
-		let field = "";
-		for(let count=0; count < 20;count++){
-			field += `					<tr>
-										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
-										<td class="text-center  pe-3 min-w-100px">
-													<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
-													<option  selected=""></option>
-													<option >DueDate-DMY</option>
-													<option >DueDate-Dชื่อย่อYY</option>
-													<option >DueDate-Dชื่อย่อYYYY</option>
-													<option >DueDate-MDY</option>
-													<option >DueDate-YMD</option>
-													<option >DueTime</option>
-													<option >Flag01</option>
-													<option >Flag02</option>
-													<option >Flag03</option>
-													<option >Flag04</option>
-													<option >Flag05</option>
-													<option >Flag06</option>
-													<option >Flag07</option>
-													<option >Flag08</option>
-													<option >Flag09</option>
-													<option >Flag10</option>
-													<option >Import By Coding</option>
-													<option >OrdersNo</option>
-													<option >PartNo</option>
-													<option >Period</option>
-													<option >PlantCode</option>
-													<option >PONo</option>
-													<option >Qty</option>
-													<option>กำหนด Dueโดย TKC</option>
-
-											</select>
-										</td>
-										<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" name="FieldsList[${count}][StartPosition]">
-										</td>
-											<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" name="FieldsList[${count}][EndPosition]">
-											</td>
-									</tr>`;
-		}
-		table_body.innerHTML = field;
+createField(20);
 
 
 		const selectCustumer = document.getElementById("custumer_select");
@@ -888,14 +845,62 @@
 				*/
 
 			}else{
+				createField(20);
 				IS_NEW_TYPE = true;
 			}
 		})
 		.catch(error => 
 			{
 				console.log(error);
+				createField(20);
 				IS_NEW_TYPE = true;
 			});
 	}
 
+	const createField = (fieldCount)=>{
+				const table_body = document.getElementById("select_body");
+		let field = "";
+		for(let count=0; count < fieldCount;count++){
+			field += `					<tr>
+										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
+										<td class="text-center  pe-3 min-w-100px">
+													<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
+													<option  selected=""></option>
+													<option >DueDate-DMY</option>
+													<option >DueDate-Dชื่อย่อYY</option>
+													<option >DueDate-Dชื่อย่อYYYY</option>
+													<option >DueDate-MDY</option>
+													<option >DueDate-YMD</option>
+													<option >DueTime</option>
+													<option >Flag01</option>
+													<option >Flag02</option>
+													<option >Flag03</option>
+													<option >Flag04</option>
+													<option >Flag05</option>
+													<option >Flag06</option>
+													<option >Flag07</option>
+													<option >Flag08</option>
+													<option >Flag09</option>
+													<option >Flag10</option>
+													<option >Import By Coding</option>
+													<option >OrdersNo</option>
+													<option >PartNo</option>
+													<option >Period</option>
+													<option >PlantCode</option>
+													<option >PONo</option>
+													<option >Qty</option>
+													<option>กำหนด Dueโดย TKC</option>
+
+											</select>
+										</td>
+										<td class="text-center pe-3 min-w-100px">
+													<input type="text" class="text-center" name="FieldsList[${count}][StartPosition]">
+										</td>
+											<td class="text-center pe-3 min-w-100px">
+													<input type="text" class="text-center" name="FieldsList[${count}][EndPosition]">
+											</td>
+									</tr>`;
+		}
+		table_body.innerHTML = field;
+	}
 </script>
