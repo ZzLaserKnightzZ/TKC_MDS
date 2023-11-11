@@ -364,6 +364,28 @@ namespace TKC_MDS.Controllers
 			return Json(new {error = "ไม่พบข้อมูล"});
 		}
 
+		public IActionResult ShiftDateTime(string date,string todo)
+		{
+			try
+			{
+				var culture = new CultureInfo("en-US");
+				var dateTime = DateTime.Parse(date, culture);// mm/dd/yyyy
+				if (todo == "out")
+				{
+					return Json(new { date = dateTime.AddDays(1).ToString("MM/dd/yyyy") });
+				}
+				if (todo == "in")
+				{
+					return Json(new { date = dateTime.AddDays(-1).ToString("MM/dd/yyyy") });
+				}
+
+			}
+			catch(Exception ex) {
+				return Ok(new { error = "เกิดข้อผิดพลาด "+ex.Message });
+			}
+			return Ok(new { error = "ป้อนข้อมูลไม่ถูกต้อง" });
+
+		}
 		public async Task<IActionResult> SlideIn()
 		{
 			try
