@@ -372,11 +372,15 @@ namespace TKC_MDS.Controllers
 				var dateTime = DateTime.Parse(date, culture);// mm/dd/yyyy
 				if (todo == "out")
 				{
-					return Json(new { date = dateTime.AddDays(1).ToString("MM/dd/yyyy") });
+					var added = dateTime.AddDays(1);
+					var resDate = $"{added.Month}/{added.Day}/{added.Year}";
+					return Json(new { date = resDate });
 				}
 				if (todo == "in")
 				{
-					return Json(new { date = dateTime.AddDays(-1).ToString("MM/dd/yyyy") });
+					var added = dateTime.AddDays(-1);
+					var resDate = $"{added.Month}/{added.Day}/{added.Year}";
+					return Json(new { date = resDate });
 				}
 
 			}
@@ -386,7 +390,7 @@ namespace TKC_MDS.Controllers
 			return Ok(new { error = "ป้อนข้อมูลไม่ถูกต้อง" });
 
 		}
-		public async Task<IActionResult> SlideIn()
+		public async Task<IActionResult> Slide(SlideDueDate input)
 		{
 			try
 			{
@@ -396,18 +400,6 @@ namespace TKC_MDS.Controllers
 
 			}
 
-			return Ok();
-		}
-		public async Task<IActionResult> SlideOut()
-		{
-			try
-			{
-
-			}
-			catch (Exception ex)
-			{
-
-			}
 			return Ok();
 		}
 	}

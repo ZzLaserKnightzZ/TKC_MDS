@@ -14,6 +14,7 @@
 			min-width:auto;
 		}
 	}
+
 	.cell-table{
 		display:grid !important;
 		box-sizing: border-box;
@@ -21,11 +22,11 @@
 		box-sizing: border-box;
 		width:100%;
 		gap:3px;
-		grid-template-columns: 1rem clamp(5rem,6vw,10rem) clamp(5rem,6vw,10rem) clamp(5rem,6vw,10rem) clamp(5rem,6vw,10rem) clamp(5rem,6vw,10rem) clamp(5rem,6vw,10rem);
+		grid-template-columns: 1rem clamp(5rem,16%,13rem) clamp(5rem,16%,13rem) clamp(5rem,16%,13rem) clamp(5rem,16%,13rem) clamp(5rem,16%,13rem) clamp(5rem,16%,13rem);
 		& > input{
 			
 			min-width: 0;
-			font-size:1.2rem;
+			font-size:clamp(0.5rem,2vw,1.3rem);
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
@@ -33,24 +34,25 @@
 			box-sizing: border-box;
 			border:none;
 			border-left: 1px solid black;
-			&:focus{
+			&:focus {
 
 				outline:none;
 				box-shadow:0 0 5px gray;
 			}
 		}
 		& > div{
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			text-align: center;
+			border-left: 1px solid black;
+			display:flex;
+			flex-direction:column;
+			justify-content:center;
+			text-align:center;
 		}
 	}
 </style>
 
 <div id="kt_app_content" class="app-content flex-column-fluid">
 	<!--begin::Content container-->
-	<div id="kt_app_content_container" class="app-container container-xxl">
+	<form id="kt_app_content_container" class="app-container container-xxl" onsubmit="return false">
 		<!--begin::Row-->
 		<div class="row gy-5 g-xl-10">
 			<div class="col-xl-2  "></div>
@@ -86,7 +88,7 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustID">
 											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-k22b">
 												เลือกลูกค้า
 											</option>
@@ -99,7 +101,7 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" onchange="selectOrder(this.value)">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" onchange="selectOrder(this.value)" name="DataType">
 											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-0afp"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
 											<option value="2">4303-TOYOTA </option>*@
@@ -122,7 +124,7 @@
 										Plant :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_plant" onchange="selectFillter(this.value,'select_order',()=> selectFillterOrderNo())">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_plant" onchange="selectFillter(this.value,'select_order',()=> selectFillterOrderNo())" name="PlantCode">
 											<option value="" data-select2-id="select2-data-18-wbd7">All</option>
 										</select>
 									</td>
@@ -132,7 +134,7 @@
 										เลขที่ Orders :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px " id="select_order" disabled onchange="selectFillter(this.value,'select_po',()=> selectFillterPO())">
+										<select class="form-select form-select-sm form-select-solid w-200px " id="select_order" disabled onchange="selectFillter(this.value,'select_po',()=> selectFillterPO())" name="OrdersNo">
 											<option value="" data-select2-id="select2-data-18-wbd7">All</option>
 										</select>
 									</td>
@@ -142,7 +144,7 @@
 										PO :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_po" disabled onchange="selectFillter(this.value,'select_path',()=> { })">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_po" disabled onchange="selectFillter(this.value,'select_part',()=> { })" name="PONo">
 											<option value="" data-select2-id="select2-data-18-wbd7">All</option>
 										</select>
 									</td>
@@ -164,7 +166,7 @@
 										ระบุพาร์ท :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" disabled id="select_path">
+										<select class="form-select form-select-sm form-select-solid w-200px" disabled id="select_part">
 											<option value="" data-select2-id="select2-data-24-npyo">0-ทั้งหมด</option>
 										</select>
 									</td>
@@ -241,26 +243,6 @@
 									<input type="text" placeholder="mm/dd/yyyy" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" />
 									<input type="text" placeholder="period" />
 									<input type="text" placeholder="hh:mm:ss" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" />
-
-									<sapn >
-										#
-									</sapn>
-									<input type="text" placeholder="mm/dd/yyyy" />
-									<input type="text" placeholder="period" />
-									<input type="text" placeholder="hh:mm:ss" />
-									<input type="text" placeholder="mm/dd/yyyy" />
-									<input type="text" placeholder="period" />
-									<input type="text" placeholder="hh:mm:ss" />
-									<input type="hidden" value="test"/>
-									<sapn >
-										#
-									</sapn>
-									<input type="text" placeholder="mm/dd/yyyy" />
-									<input type="text" placeholder="period" />
-									<input type="text" placeholder="hh:mm:ss" />
-									<input type="text" placeholder="mm/dd/yyyy" />
-									<input type="text" placeholder="period" />
-									<input type="text" placeholder="hh:mm:ss" />
 								</div>
 								<div class="cell-table" style="overflow-y:auto;margin-top:auto.4rem;background-color:gray;">
 									<sapn>
@@ -379,11 +361,12 @@
 			<!--end::Col-->
 		</div>
 		<!--end::Row-->
-	</div>
+	</form>
 	<!--end::Content container-->
 </div>
 <script>
 	var ALL_ORDER = [];
+	var TABLE_COUNTER = 0;
 
 	const selectOrder = (dataTypeId)=>{
 		let select_custumer = document.getElementById("select_custumer");
@@ -438,8 +421,50 @@
 	}
 
 	const addTableCell = (value)=>{
-		let table_cell = document.getElementById("table_cell");
-		table_cell.innerHTML.concat("<h1>"+value+"</h1>");
+		//filter
+		const plant = document.getElementById("select_plant").value;
+		const order = document.getElementById("select_order").value;
+		const po = document.getElementById("select_po").value;
+		const partNo = document.getElementById("select_part").value;
+		const slide = document.getElementById("select_slide").value;
+
+		let filter_order =  ALL_ORDER; //init
+
+		if (plant !== ""){
+			filter_order = filter_order.filter(order => order.plantCode === plant);
+		}
+		if (order !== "") {
+			filter_order = filter_order.filter(order => order.ordersNo === order);
+		}
+		if (po !== "") {
+			filter_order = filter_order.filter(order => order.poNo === po);
+		}
+		if (partNo !== "") {
+			filter_order = filter_order.filter(order => order.partNo === partNo);
+		}
+		const slected_order = filter_order.find(orders => orders.dueDate.startsWith(value));
+		console.log("add", slected_order);
+		console.log("filter", filter_order);
+		if (slected_order){
+			console.log(value, slide);
+			fetch("/order/ShiftDateTime?date=" + value + "&todo=" + slide)
+			.then(res => res.json())
+			.then(data => {
+				let table_cell = document.getElementById("table_cell");
+				const html = `
+													<sapn >${TABLE_COUNTER+1}</sapn>
+														<input type="text" placeholder="mm/dd/yyyy" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" value="${slected_order?.dueDate}" name="[${TABLE_COUNTER}][Shift][FromDate]"/>
+														<input type="text" placeholder="period" value="${slected_order?.period}" name="[${TABLE_COUNTER}][Shift][FromPeriod]"/>
+														<input type="text" placeholder="hh:mm:ss" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" value="${slected_order?.dueTime}" name="[${TABLE_COUNTER}][Shift][FromTime]"/>
+															<input type="text" placeholder="mm/dd/yyyy" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" value="${data?.date}" name="[${TABLE_COUNTER}][Shift][FromDate]"/>
+														<input type="text" placeholder="period" value="${slected_order.dueDate}" name="[${TABLE_COUNTER}][Shift][FromPeriod]"/>
+														<input type="text" placeholder="hh:mm:ss" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" value="${slected_order?.dueTime}" name="[${TABLE_COUNTER}][Shift][FromTime]"/>`;
+
+				table_cell.innerHTML = html + table_cell.innerHTML;
+				TABLE_COUNTER++;
+			}).catch(error=>console.log(error));
+		}
+
 	}
 
 	const clickSave=()=>{
@@ -450,7 +475,7 @@
 			const dataType = document.getElementById("select_dataType").value;
 			const orderNo = document.getElementById("select_order").value;
 			const po = document.getElementById("select_po").value;
-			const partNo = document.getElementById("select_path").value;
+			const partNo = document.getElementById("select_part").value;
 
 			Swal.fire({
 				title: "คุณแน่ใจแล้วหรือ?",
@@ -479,7 +504,7 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "in") { //slide in
-			fetch("/order/SlideIn")
+			fetch("/order/Slide")
 			.then(res=> res.json())
 			.then(data=>{
 
@@ -488,7 +513,7 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "out") { //slide out
-			fetch("/order/SlideIn")
+			fetch("/order/Slide")
 				.then(res => res.json())
 				.then(data => {
 
