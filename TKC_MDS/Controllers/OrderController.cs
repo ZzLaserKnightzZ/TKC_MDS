@@ -1,15 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Borders;
+using iText.Layout.Element;
+using iText.Layout.Font;
+using iText.Layout.Properties;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using TKC_MDS.Data;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
+
 
 namespace TKC_MDS.Controllers
 {
@@ -17,10 +31,12 @@ namespace TKC_MDS.Controllers
 	{
 		private readonly ILogger<OrderController> _logger;
 		private readonly Dapper_Context _dapperContext;
-		public OrderController(ILogger<OrderController> logger, Dapper_Context dapper_Context)
+		private readonly IWebHostEnvironment _env;
+		public OrderController(ILogger<OrderController> logger, Dapper_Context dapper_Context, IWebHostEnvironment env)
 		{
 			_logger = logger;
 			_dapperContext = dapper_Context;
+			_env = env;
 		}
 		public IActionResult DataType()
 		{
@@ -373,13 +389,13 @@ namespace TKC_MDS.Controllers
 				if (todo == "out")
 				{
 					var added = dateTime.AddDays(1);
-					var resDate = $"{added.Month}/{added.Day}/{added.Year}";
+					var resDate = $"{added.Month}/{added.Day}/{added.Year} {added.Hour}:{added.Minute}:{added.Second}";
 					return Json(new { date = resDate });
 				}
 				if (todo == "in")
 				{
 					var added = dateTime.AddDays(-1);
-					var resDate = $"{added.Month}/{added.Day}/{added.Year}";
+					var resDate = $"{added.Month}/{added.Day}/{added.Year} {added.Hour}:{added.Minute}:{added.Second}";
 					return Json(new { date = resDate });
 				}
 
@@ -390,17 +406,130 @@ namespace TKC_MDS.Controllers
 			return Ok(new { error = "ป้อนข้อมูลไม่ถูกต้อง" });
 
 		}
-		public async Task<IActionResult> Slide(SlideDueDate input)
+		[HttpPost]
+		public async Task<IActionResult> SlideIn([FromForm] SlideDueDate input)
+		{
+			try
+			{
+				foreach(var shiftDate in input.ShiftDate)
+				{
+					var culture = new CultureInfo("en-US");
+					var toDate = DateTime.Parse(shiftDate.ToDate,culture);
+					var fromDate = DateTime.Parse(shiftDate.FromDate, culture);
+					var date = DateTime.Now;
+					string cmd = $"UPDATE T_SchOrdersPart SET DueDate = '{toDate.Year}-{toDate.Month}-{date.Day} {toDate.Hour}:{toDate.Minute}:{toDate.Second}',Period='{shiftDate.ToPeriod}',DueTime='{shiftDate.ToTime}' WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate='{fromDate.Year}-{fromDate.Month}-{fromDate.Day} {fromDate.Hour}:{fromDate.Minute}:{fromDate.Second}' {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 40";
+					var update = await _dapperContext.Update(cmd, new { });
+				}
+				return Json(new { msg = "บันทึกข้อมูลเรียบร้อย" });
+
+			}
+			catch(Exception ex)
+			{
+				return Json(new { error = "เกิดข้อผิดพลาด > "+ex.Message });
+			}
+
+			
+		}
+		[HttpPost]
+		public async Task<IActionResult> SlideOut([FromForm] SlideDueDate input)
 		{
 			try
 			{
 
-			}catch(Exception ex)
+			}
+			catch (Exception ex)
 			{
 
 			}
 
 			return Ok();
+		}
+
+		/*
+		public IActionResult CreatePdf(string html)
+		{
+			var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
+			var path = System.IO.Path.Combine(_env.WebRootPath, show_path);
+
+			SelectPdf.HtmlToPdf converter = new SelectPdf.HtmlToPdf();
+			converter.Options.PdfPageSize = SelectPdf.PdfPageSize.A4;
+			converter.Options.PdfPageOrientation = SelectPdf.PdfPageOrientation.Landscape;
+			converter.Options.MarginLeft = 10;
+			converter.Options.MarginRight = 10;
+			converter.Options.MarginTop = 10;
+			converter.Options.MarginBottom = 10;
+			//SelectPdf.PdfDocument doc = converter.ConvertUrl("https://www.w3schools.com/");
+			var doc = converter.ConvertHtmlString(@"<style>h1{color:red;}</style><h1>fsdf<1h>");
+			doc.Save(path);
+			
+			doc.Close();
+			return RedirectToAction(show_path);
+		}*/
+		public async Task<ActionResult> Recruitment_Print_PDF()
+		{
+			//var NameFile = "Recruitment_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".pdf";
+			var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
+			var pathfile = System.IO.Path.Combine(_env.WebRootPath, show_path);
+
+			var memoryStream = new MemoryStream();
+			PdfWriter writer = new PdfWriter(memoryStream);
+			PdfDocument pdfDocument = new PdfDocument(writer);
+			Document document = new Document(pdfDocument, PageSize.A4.Rotate());
+
+			document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+
+			Paragraph p = new Paragraph("Text to the left");
+			p.Add(new Tab());
+			p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
+			p.Add("Text to the center");
+			p.Add(new Tab());
+			p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
+			p.Add("Text to the right");
+			document.Add(p);
+
+			//header
+			float[] ColumnWidth = { 50f, 50f,50f,50f,150f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f };
+			iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
+
+			table.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			table.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			table.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			table.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			table.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			for (var i=1;i<=31;i++)
+			{
+				table.AddCell(new Cell().Add(new Paragraph(i+"").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+			}
+			table.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+			document.Add(table);
+
+
+			//data
+			var factoryPlant = new Paragraph("factory: 2 Plant: SPIMIT").SetTextAlignment(TextAlignment.LEFT).SetPadding(3).SetFontSize(7);
+			document.Add(factoryPlant);
+			for(var row=0;row < 50; row++)
+			{
+				iText.Layout.Element.Table tabledata = new iText.Layout.Element.Table(ColumnWidth);
+
+				tabledata.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				tabledata.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				tabledata.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				tabledata.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				tabledata.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				for (var i = 1; i <= 31; i++)
+				{
+					tabledata.AddCell(new Cell().Add(new Paragraph(i + "").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				}
+				tabledata.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				document.Add(tabledata);
+			}
+
+
+			document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+
+			document.Close();
+			return File(memoryStream.ToArray(), "application/pdf", "test.pdf");
 		}
 	}
 }

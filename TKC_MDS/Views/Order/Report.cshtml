@@ -152,6 +152,107 @@
 	<!--end::Content container-->
 </div>
 
+
+<div style="width:100%;height:2480px;background:pink;">
+	<style>
+		.page-header{
+			width:100%;
+			height:2rem;
+			font-size:1.5rem;
+			/*centertext*/
+			display:flex;
+			flex-direction:column;
+			justify-content:center;
+			text-align:center;
+		}
+		.title-header{
+			display:flex;
+			justify-content:space-between;
+			width: 100%;
+			& > *{
+				font-size: 1.3rem;
+				&:nth-laschild(){
+					font-size:0.7rem;
+				}
+			}
+		}
+		.title-table{
+			border-bottom: 2px solid black;
+			padding-top:3px;
+			padding-bottom: 3px;
+			width:100%;
+			background-color:aqua;
+
+			display:flex;
+			grid-auto-columns: 5rem 3rem 10rem 5rem 15rem repeat(32,auto);
+			& > *{
+				height:1.3rem;
+				padding:3px;
+				border-top: 2px solid black;
+				/*center text*/
+				display:flex;
+				flex-direction:column;
+				justify-content:center;
+				text-align:center;
+			}
+		}
+		.factory{
+			display:block;
+			height:1.5rem;
+			width: 100%;
+			margin:0;
+			padding:2rem;
+		}
+	</style>
+	<p class="page-header">
+		MASTER DELIVERY SCHEDULE
+	</p>
+	<div>
+		<span>Issue Date 20/10/2023 Time 14:56:48</span>
+		<span>CUSTOMER: 4211 - IMCT PARTS FOR NOVEMBER 2023 Data Type: 01</span>
+		<span>Page 1 of </span>
+	</div>
+	<p class="factory">Factory: 2 Plant: SPIMIT</p>
+	<div class="title-table">
+		<div>MOD</div>
+		<div>KbNo</div>
+		<div>CUST PART</div>
+		<div>TKC PART</div>
+		<div>PART NAME</div>
+		<div>1</div>
+		<div>2</div>
+		<div>3</div>
+		<div>4</div>
+		<div>5</div>
+		<div>6</div>
+		<div>7</div>
+		<div>8</div>
+		<div>9</div>
+		<div>10</div>
+		<div>11</div>
+		<div>12</div>
+		<div>13</div>
+		<div>14</div>
+		<div>15</div>
+		<div>16</div>
+		<div>17</div>
+		<div>18</div>
+		<div>19</div>
+		<div>20</div>
+		<div>21</div>
+		<div>22</div>
+		<div>23</div>
+		<div>24</div>
+		<div>25</div>
+		<div>27</div>
+		<div>28</div>
+		<div>29</div>
+		<div>30</div>
+		<div>31</div>
+		<div>TOTAL</div>
+	</div>
+</div>
+
 <script>
 	window.onload = async () => {
 		let select_custumer = document.getElementById("select_custumer");
