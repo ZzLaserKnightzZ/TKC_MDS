@@ -259,7 +259,9 @@
 				return;
 			}
 			if (blob) {
-				window.open(URL.createObjectURL(blob), "_blank")
+				let blob_url = URL.createObjectURL(blob);
+				window.open(blob_url, "_blank");
+				URL.revokeObjectURL(blob_url);
 			}
 		}).catch(error => console.log(error));
 	}
