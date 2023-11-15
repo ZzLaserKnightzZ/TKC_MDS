@@ -523,6 +523,12 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "in") { //slide in
+			const plant = document.getElementById("select_plant").value;
+			const order = document.getElementById("select_order").value;
+			if (plant == "" || order == "") {
+				Swal.fire("กรุณาเลือก order plant");
+				return;
+			}
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
 			fetch("/order/SlideIn",{method:"post",body:formData})
@@ -538,6 +544,12 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "out") { //slide out
+			const plant = document.getElementById("select_plant").value;
+			const order = document.getElementById("select_order").value;
+			if (plant == "" || order == "") {
+				Swal.fire("กรุณาเลือก order plant");
+				return;
+			}
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
 			fetch("/order/SlideOut", { method: "post", body: formData })

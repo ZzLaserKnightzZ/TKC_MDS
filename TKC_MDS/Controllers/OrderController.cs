@@ -465,71 +465,83 @@ namespace TKC_MDS.Controllers
 			doc.Close();
 			return RedirectToAction(show_path);
 		}*/
-		public async Task<ActionResult> Recruitment_Print_PDF()
+		public async Task<ActionResult> PrintReportPDF(Report input)
 		{
-			//var NameFile = "Recruitment_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".pdf";
-			var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
-			var pathfile = System.IO.Path.Combine(_env.WebRootPath, show_path);
-
-			var memoryStream = new MemoryStream();
-			PdfWriter writer = new PdfWriter(memoryStream);
-			PdfDocument pdfDocument = new PdfDocument(writer);
-			Document document = new Document(pdfDocument, PageSize.A4.Rotate());
-
-			document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
-
-			Paragraph p = new Paragraph("Text to the left");
-			p.Add(new Tab());
-			p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
-			p.Add("Text to the center");
-			p.Add(new Tab());
-			p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
-			p.Add("Text to the right");
-			document.Add(p);
-
-			//header
-			float[] ColumnWidth = { 50f, 50f,50f,50f,150f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f };
-			iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
-
-			table.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			table.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			table.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			table.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			table.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			for (var i=1;i<=31;i++)
+			try
 			{
-				table.AddCell(new Cell().Add(new Paragraph(i+"").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-			}
-			table.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-
-			document.Add(table);
 
 
-			//data
-			var factoryPlant = new Paragraph("factory: 2 Plant: SPIMIT").SetTextAlignment(TextAlignment.LEFT).SetPadding(3).SetFontSize(7);
-			document.Add(factoryPlant);
-			for(var row=0;row < 50; row++)
-			{
-				iText.Layout.Element.Table tabledata = new iText.Layout.Element.Table(ColumnWidth);
+				//var NameFile = "Recruitment_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".pdf";
+				var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
+				var pathfile = System.IO.Path.Combine(_env.WebRootPath, show_path);
 
-				tabledata.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-				tabledata.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-				tabledata.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-				tabledata.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-				tabledata.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				var memoryStream = new MemoryStream();
+				PdfWriter writer = new PdfWriter(memoryStream);
+				PdfDocument pdfDocument = new PdfDocument(writer);
+				Document document = new Document(pdfDocument, PageSize.A4.Rotate());
+
+				document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+
+				Paragraph p = new Paragraph("Text to the left");
+				p.Add(new Tab());
+				p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
+				p.Add("Text to the center");
+				p.Add(new Tab());
+				p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
+				p.Add("Text to the right");
+				document.Add(p);
+
+				//header
+				float[] ColumnWidth = { 50f, 50f, 50f, 50f, 150f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f };
+				iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
+
+				table.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				table.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				table.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				table.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				table.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
 				for (var i = 1; i <= 31; i++)
 				{
-					tabledata.AddCell(new Cell().Add(new Paragraph(i + "").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					table.AddCell(new Cell().Add(new Paragraph(i + "").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
 				}
-				tabledata.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
-				document.Add(tabledata);
+				table.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+				document.Add(table);
+
+
+				//data
+				var factoryPlant = new Paragraph("factory: 2 Plant: SPIMIT").SetTextAlignment(TextAlignment.LEFT).SetPadding(3).SetFontSize(7);
+				document.Add(factoryPlant);
+				for (var row = 0; row < 50; row++)
+				{
+					iText.Layout.Element.Table tabledata = new iText.Layout.Element.Table(ColumnWidth);
+
+					tabledata.AddCell(new Cell().Add(new Paragraph("MOD" + row).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					tabledata.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					tabledata.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					tabledata.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					tabledata.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					for (var i = 1; i <= 31; i++)
+					{
+						tabledata.AddCell(new Cell().Add(new Paragraph(i + "").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					}
+					tabledata.AddCell(new Cell().Add(new Paragraph("TOTAL").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					document.Add(tabledata);
+				}
+
+				//new page
+				document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+				document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+				document.Add(p);
+				document.Add(table);
+
+				document.Close();
+
+				return  File(memoryStream.ToArray(), "application/pdf", input?.CustId+"_"+input?.DataType+"_"+input?.DueTime+".pdf");
+			}catch(Exception ex)
+			{
+				return Json(new {error = ex.Message});
 			}
-
-
-			document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
-
-			document.Close();
-			return File(memoryStream.ToArray(), "application/pdf", "test.pdf");
 		}
 	}
 }

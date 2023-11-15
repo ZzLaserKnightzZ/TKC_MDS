@@ -1,7 +1,7 @@
 ﻿@{
 	ViewData["Title"] = "Report";
 }
-<div id="kt_app_content" class="app-content flex-column-fluid">
+<form id="kt_app_content" class="app-content flex-column-fluid" onsubmit="return false">
 	<!--begin::Content container-->
 	<div id="kt_app_content_container" class="app-container container-xxl">
 
@@ -38,23 +38,23 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustId">
+											@*
 											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-8t7j">
 												เลือกลูกค้า
 											</option>
 											<option value="1">4302-MITSUBISHI P/C</option>
-											<option value="2">4303-TOYOTA </option>
-
+											<option value="2">4303-TOYOTA </option>*@
 										</select>
 									</td>
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType">
-											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-mm44"></option>
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" name="DataType">
+											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-mm44"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
-											<option value="2">4303-TOYOTA </option>
+											<option value="2">4303-TOYOTA </option>*@
 
 										</select>
 									</td>
@@ -64,8 +64,8 @@
 										ประเภทรายงาน :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px">
-											<option value="1" data-select2-id="select2-data-9-lsju">แผนการส่งของ</option>
+										<select class="form-select form-select-sm form-select-solid w-200px" name="ReportType">
+											@*<option value="1" data-select2-id="select2-data-9-lsju">แผนการส่งของ</option>*@
 										</select>
 									</td>
 								</tr>
@@ -74,10 +74,10 @@
 										เดือนรายงาน :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" data-select2-id="select2-data-12-7me1">06-2023</option>
+										<select class="form-select form-select-sm form-select-solid w-200px" name="ReportMount">
+											@*<option value="1" data-select2-id="select2-data-12-7me1">06-2023</option>
 											<option value="1">07-2023</option>
-											<option value="1">08-2023</option>
+											<option value="1">08-2023</option>*@
 										</select>
 									</td>
 								</tr>
@@ -85,16 +85,14 @@
 									<th class="text-end  text-dark pe-3 min-w-100px">
 										เพิ่มเติม
 									</th>
-
-
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										Plant :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" data-select2-id="select2-data-15-nlkk">All</option>
+										<select class="form-select form-select-sm form-select-solid w-200px" name="Plan">
+											@*<option value="1" data-select2-id="select2-data-15-nlkk">All</option>*@
 										</select>
 									</td>
 								</tr>
@@ -103,8 +101,8 @@
 										Period :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" data-select2-id="select2-data-18-2vhz">All</option>
+										<select class="form-select form-select-sm form-select-solid w-200px" name="Period">
+											@*<option value="1" data-select2-id="select2-data-18-2vhz">All</option>*@
 										</select>
 									</td>
 								</tr>
@@ -113,8 +111,8 @@
 										Due Time :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" >
-											<option value="1" data-select2-id="select2-data-21-tssa">All</option>
+										<select class="form-select form-select-sm form-select-solid w-200px" name="DueTime">
+											@*<option value="1" data-select2-id="select2-data-21-tssa">All</option>*@
 										</select>
 									</td>
 								</tr>
@@ -123,20 +121,17 @@
 										P/N ลูกค้า :
 									</th>
 									<td class="text-start pe-3 min-w-50px">
-										<input type="text" name="" id="">
+										<input type="text" name="PNCust" id="">
 									</td>
 								</tr>
-
-
 								<!--end::Table row-->
 								<!--end::Table head-->
-
 							</tbody>
 						</table>
 						<!--end::Table-->
 						<div class="d-flex justify-content-center">
-							<a class="btn btn-sm fw-bold btn-primary me-2">เปิดรายงาน</a>
-							<a class="btn btn-sm fw-bold btn-secondary">ยกเลิก</a>
+							<button type="button" class="btn btn-sm fw-bold btn-primary me-2" onclick="openFile()">เปิดรายงาน</button>
+							<button type="button" class="btn btn-sm fw-bold btn-secondary">ยกเลิก</button>
 						</div>
 
 					</div>
@@ -150,9 +145,9 @@
 		<!--end::Row-->
 	</div>
 	<!--end::Content container-->
-</div>
+</form>
 
-
+@*
 <div style="width:100%;height:2480px;background:pink;">
 	<style>
 		.page-header{
@@ -252,13 +247,28 @@
 		<div>TOTAL</div>
 	</div>
 </div>
-
+*@
 <script>
+	const openFile = ()=>{
+		let form = document.getElementById("kt_app_content");
+		let formData = new FormData(form);
+		fetch("/order/PrintReportPDF",{method:"post",body:formData}).then(res => res.blob()).then(blob => {
+			console.log(blob)
+			if (blob.error) {
+				Swal.fire('เกิดข้อผิดพลาด '+data.error);
+				return;
+			}
+			if (blob) {
+				window.open(URL.createObjectURL(blob), "_blank")
+			}
+		}).catch(error => console.log(error));
+	}
+
 	window.onload = async () => {
 		let select_custumer = document.getElementById("select_custumer");
 		const listUser = await fetch("/order/JsonCustumer");
 		const users_json = await listUser.json();
-		select_custumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected > </option>`);
+		select_custumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected> </option>`);
 
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
