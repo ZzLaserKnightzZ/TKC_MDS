@@ -354,28 +354,28 @@ namespace TKC_MDS.Controllers
 			var date = DateTime.Now;
 			if(!string.IsNullOrEmpty(orderNo) && !string.IsNullOrEmpty(po) && !string.IsNullOrEmpty(partNo))//IsNullOrEmpty for all
 			{
-				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
-				return Json(new { msg = "แก้ไขเรียบร้อย" });
+				var order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
+				return Json(new { msg = "แก้ไขเรียบร้อย "+order+" รายการ" });
 			}
 			if (!string.IsNullOrEmpty(orderNo) && !string.IsNullOrEmpty(po))
 			{
-				var v= await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
-				return Json(new { msg = "แก้ไขเรียบร้อย" });
+				var order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10",new {});
+				return Json(new { msg = "แก้ไขเรียบร้อย" + order + " รายการ" });
 			}
 			if (!string.IsNullOrEmpty(orderNo))
 			{
-				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
-				return Json(new { msg = "แก้ไขเรียบร้อย" });
+				var order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND OrdersNo='{orderNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" + order + " รายการ" });
 			}
 			if (!string.IsNullOrEmpty(po))
 			{
-				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
-				return Json(new { msg = "แก้ไขเรียบร้อย" });
+				var order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PONo='{po}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" + order + " รายการ" });
 			}
 			if (!string.IsNullOrEmpty(partNo))
 			{
-				await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
-				return Json(new { msg = "แก้ไขเรียบร้อย" });
+				var order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty = 0 WHERE CustID='{custId}' AND DataType ='{dataType}' AND PartNo='{partNo}' AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 10", new { });
+				return Json(new { msg = "แก้ไขเรียบร้อย" + order + " รายการ" });
 			}
 			return Json(new {error = "ไม่พบข้อมูล"});
 		}
