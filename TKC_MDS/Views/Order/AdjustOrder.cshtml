@@ -88,7 +88,7 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustID">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustID" onchange="selectOrder()">
 											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-k22b">
 												เลือกลูกค้า
 											</option>
@@ -101,7 +101,7 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" onchange="selectOrder(this.value)" name="DataType">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" onchange="selectOrder()" name="DataType">
 											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-0afp"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
 											<option value="2">4303-TOYOTA </option>*@
@@ -166,12 +166,12 @@
 										ระบุพาร์ท :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_part" name="PartNo">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_part" name="PartNo" disabled>
 											<option value="" data-select2-id="select2-data-24-npyo">0-ทั้งหมด</option>
 										</select>
 									</td>
 									<th>
-										<button type="button" class="btn btn-secondary fw-bold fs-7">
+										<button type="button" class="btn btn-secondary fw-bold fs-7" onclick="clickOpenPart()">
 											กำหนดพาร์ท
 										</button>
 									</th>
@@ -368,14 +368,132 @@
 	</form>
 	<!--end::Content container-->
 </div>
+
+<style>
+	.part-container{
+		position:fixed;
+		top:0;
+		left:0;
+		width:100vw;
+		height:100vh;
+		box-sizing:border-box;
+
+		display:none;
+		flex-direction:column;
+		justify-content:center;
+		align-items:center;
+		backdrop-filter:blur(10px);
+		background-color:rgb(0,0,0,0.5);
+	}
+	.part-body{
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+	.part-box{
+		width:clamp(320px,50%,400px);
+		height:clamp(350px,60vh,80%);
+		display:grid;
+		grid-template-rows:4rem auto 3rem;
+		border-radius:10px;
+		background-color:white;
+		box-shadow:0 0 10px gray;
+		box-sizing:border-box;
+		& > h3{
+			font-size:1.5rem;
+			background-color:#424242;
+			color:red;
+			border-top-left-radius:10px;
+			border-top-right-radius:10px;
+			display:flex;
+			justify-content:center;
+			flex-direction:column;
+			text-align:center;
+		}
+
+		& > part-body {
+			padding:3rem;
+		}
+	}
+	.part-select-item{
+		margin:2px;
+		width:100%;
+		height:2rem;
+		display:grid;
+		grid-template-columns:2rem auto;
+		border-bottom:1px solid gray;
+		& > div{
+			padding: 2px;
+		}
+		
+	}
+	.part-footer{
+		display:grid;
+		//grid-template-columns:auto auto;
+		& > button{
+			border-radius:10px;
+			border:none;
+		}
+	}
+</style>
+
+<div class="part-container" id="part_container" style="display:none;">
+	<div class="part-box">
+		<h3>เลือก part</h3>
+		<!--body-->
+		<div class="part-body" id="select_part_body">
+			<div class="part-select-item">
+				<input type="checkbox" />
+				<div>part 1</div>
+			</div>
+		</div>
+		<!--end body-->
+		<div class="part-footer">
+			<button style="background-color:lime;" onclick="clickOpenSelectPart()">ตกลง</button>
+		</div>
+	</div>
+</div>
+
 <script>
 	var ALL_ORDER = [];
 	var TABLE_COUNTER = 0;
+	var PART=[];
 
-	const selectOrder = (dataTypeId)=>{
-		let select_custumer = document.getElementById("select_custumer");
+	const clickOpenSelectPart = ()=>{
+		let container_part = document.getElementById("part_container");
+		if(container_part.style.display == "none"){
+			container_part.style.display = "flex";
+		}else{
+			container_part.style.display = "none";
+		}
+	}
+
+	const clickAddPart = (value,checked)=>{
+		if (checked){
+			PART.push(value);
+		}else{
+			PART = PART.filter(x => x !== value);
+		}
+	}
+
+	const clickOpenPart=()=>{
+
+		const part_no = ALL_ORDER.map(order => order.partNo);
+		const part_no_set = new Set(part_no);
+		const option_part = Array.from(part_no_set).reduce((prev, curr) => prev += `
+				<div class="part-select-item">
+						<input type="checkbox" ${PART.includes(curr) ? "checked":""} value="${curr}" onChange="clickAddPart(this.value,this.checked)"/>
+					<div>${curr}</div>
+				</div>`, ``);
+
+		document.getElementById("select_part_body").innerHTML = option_part;
+		clickOpenSelectPart();
+	}
+
+	const selectOrder = ()=>{
+		const select_custumer = document.getElementById("select_custumer").value;
+		const select_dataType = document.getElementById("select_dataType").value;
 		//fetch dataType 
-		fetch("/order/JsonAdjOrder?custId=" + select_custumer.value + "&dataTypeId=" + dataTypeId)
+		fetch("/order/JsonAdjOrder?custId=" + select_custumer + "&dataTypeId=" + select_dataType)
 		.then(res => res.json())
 		.then(data => {
 			ALL_ORDER = data;
@@ -390,24 +508,16 @@
 			selectFillterOrderNo();
 			selectFillterPO();
 			selectFillterPart();
+			selectFillterPlant();
 		})
 		.catch(error => console.log(error))
 	}
-	/*
-	const selectFillter = (value,nextName,nextFunc)=>{
-		if(value != ""){
-			document.getElementById(nextName).disabled = false;
-			nextFunc();
-		}else{
-			document.getElementById(nextName).disabled = true;
-		}
-	}
-	*/
+
 	const selectSlideChange = (value) => {
 		if (value === "cancel") {
-			document.getElementById("select_plant").disabled = true;
+			document.getElementById("select_slide").disabled = true;
 		} else{
-			document.getElementById("select_plant").disabled = false;
+			document.getElementById("select_slide").disabled = false;
 		}
 	}
 	
@@ -428,11 +538,19 @@
 	}
 
 	const selectFillterPart = () => {
-		//po
+		//part
 		const part = ALL_ORDER.map(order => order.partNo);
 		const part_set = new Set(part);
 		const option_part = Array.from(part_set).reduce((prev, curr) => prev += `<option value="${curr}">${curr}</option>`, `<option value="">All</option>`);
 		document.getElementById("select_part").innerHTML = option_part;
+	}
+
+	const selectFillterPlant = () => {
+		//plant
+		const plant = ALL_ORDER.map(order => order.plantCode);
+		const plant_set = new Set(plant);
+		const option_plant = Array.from(plant_set).reduce((prev, curr) => prev += `<option value="${curr}">${curr}</option>`, `<option value="">All</option>`);
+		document.getElementById("select_part").innerHTML = option_plant;
 	}
 
 	const addTableCell = (value)=>{
@@ -441,10 +559,11 @@
 		const order = document.getElementById("select_order").value;
 		const po = document.getElementById("select_po").value;
 		const partNo = document.getElementById("select_part").value;
+
 		const slide = document.getElementById("select_slide").value;
 
 		let filter = JSON.parse(JSON.stringify(ALL_ORDER)); //init
-
+		console.log(filter);
 		if (plant != ""){
 			filter = filter.filter(orders => orders.plantCode == plant);
 		}
@@ -454,10 +573,19 @@
 		if (po != "") {
 			filter = filter.filter(orders => orders.poNo == po);
 		}
+		/*
 		if (partNo != "") {
 			filter = filter.filter(orders => orders.partNo == partNo);
 		}
-		const slected_order = filter.find(orders => orders.dueDate.startsWith(value));
+		*/
+
+		if(PART.length > 0){
+			filter = filter.filter(orders => PART.includes(orders.partNo));
+		}
+
+		let slected_order = null;
+		if(value.length >= 10)
+			slected_order = filter.find(orders => orders.dueDate.includes(value));
 
 		if (slected_order){
 			fetch("/order/ShiftDateTime?date=" + value + "&todo=" + slide)
@@ -488,13 +616,27 @@
 	const clickSaveCancel=()=>{
 		const slide = document.getElementById("select_slide_or_cancel").value;
 		const slide_in_out = document.getElementById("select_slide").value;
-		console.log(slide_in_out, slide);
+		//must have
+		const custId = document.getElementById("select_custumer").value;
+		const dataType = document.getElementById("select_dataType").value;
+
+		if (custId == "" || dataType == "") {
+			Swal.fire("กรุณาเลือก custumer dataType");
+			return;
+		}
+
 		if (slide === "cancel"){ //cancel
+			/*
 			const custId = document.getElementById("select_custumer").value;
 			const dataType = document.getElementById("select_dataType").value;
 			const orderNo = document.getElementById("select_order").value;
 			const po = document.getElementById("select_po").value;
 			const partNo = document.getElementById("select_part").value;
+			*/
+			//`/order/CancelOrder?custId=${custId}&dataType=${dataType}&orderNo=${orderNo}&po=${po}&partNo=${partNo}`
+
+			let form = document.getElementById("kt_app_content_container");
+			let formData = new FormData(form);
 
 			Swal.fire({
 				title: "คุณแน่ใจแล้วหรือ?",
@@ -506,13 +648,13 @@
 				confirmButtonText: "Yes!"
 			}).then((result) => {
 				if (result.isConfirmed) {
-					fetch(`/order/CancelOrder?custId=${custId}&dataType=${dataType}&orderNo=${orderNo}&po=${po}&partNo=${partNo}`,{method:"post"})
+					fetch(`/order/CancelOrder`, { method: "post", body: formData })
 						.then(res => res.json())
 						.then(data => {
 							if (data.msg) {
 								Swal.fire(data.msg);
 							} else {
-								Swal.fire('เกิดข้อผิดพลาด >' + data.error);
+								Swal.fire( data.error);
 							}
 						})
 						.catch(error => Swal.fire('เกิดข้อผิดพลาด >' + error));
@@ -523,12 +665,12 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "in") { //slide in
-			const plant = document.getElementById("select_plant").value;
+			/*const plant = document.getElementById("select_plant").value;
 			const order = document.getElementById("select_order").value;
 			if (plant == "" || order == "") {
 				Swal.fire("กรุณาเลือก order plant");
 				return;
-			}
+			}*/
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
 			fetch("/order/SlideIn",{method:"post",body:formData})
@@ -544,12 +686,13 @@
 			return;
 		}
 		if (slide === "slide" && slide_in_out === "out") { //slide out
-			const plant = document.getElementById("select_plant").value;
+			/*const plant = document.getElementById("select_plant").value;
 			const order = document.getElementById("select_order").value;
 			if (plant == "" || order == "") {
 				Swal.fire("กรุณาเลือก order plant");
 				return;
 			}
+			*/
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
 			fetch("/order/SlideOut", { method: "post", body: formData })

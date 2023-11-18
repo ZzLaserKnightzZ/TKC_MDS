@@ -125,10 +125,10 @@
 										หนึ่งแถวข้อมูลมีหลายDue :
 									</th>
 									<td class="text-start pe-3 min-w-30px"> 
-										<input type="checkbox"  name="RowManyDue" value="false" id="row_many_due" onclick="clickCheckBox(this)" onchange="have_many_due(this.value)">
+										<input type="checkbox"  name="RowManyDue" value="false" id="row_many_due" onclick="clickCheckBox(this)" onchange="haveManyDue(this.value)">
 									</td>
 								</tr>
-								<tr class="text-start  fw-bold fs-7  gs-0">
+								<tr class="text-start  fw-bold fs-7  gs-0" id="has_many_due" style="display:none;">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
 									<td class="text-start pe-3 min-w-30px">
 										<div class="form-group">
@@ -183,7 +183,7 @@
 										:
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-											<select class="form-select form-select-sm form-select-solid w-200px" name="SepMDSbyFlag01" id="have_seperater">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="SepMDSbyFlag01" id="have_seperater" onchange="selectChangeField(this.value)">
 											<option value="true" selected="selected" >
 												แถวข้อมูลมีตัวคั่นเช่น , | Tab
 											</option>
@@ -447,7 +447,40 @@
 	var IS_NEW_TYPE=true;
 
 	const cancle = ()=>{
-		window.location.reload();
+		window.location.href = "/order/datatype";
+	}
+
+	const checkDataType=(value)=>{
+		let same_value_counter = 0;
+		document.getElementById("select_body").querySelectorAll(`tr > td > input[id="input_checker"]`).forEach(input => {
+			if(input.value == value && value != ""){
+				same_value_counter++;
+				input.style.outline = "3px solid red"; 
+			}else{
+				input.style.outline = "none"; 
+			}
+		});
+
+		if(same_value_counter > 1){
+			Swal.fire('ฟิวล์ นี้ถูกใช้งานไปแล้ว');
+		}
+	}
+
+	const selectChangeField=(value)=>{
+
+		if(value == "false"){ //ถ้าไม่มีตัวขั้น
+			document.getElementById("Seperator").querySelectorAll("option").forEach(option => {
+			if(option.value == ""){
+				option.selected = true;
+			}else{
+				option.selected = false;
+			}
+			});
+		}
+		document.querySelectorAll("#input_seperater").forEach(input => { //set none seperater
+			
+				input.readOnly = ! input.readOnly;
+		});
 	}
 
 	const clickCheckBox=(checkbox)=>{
@@ -472,7 +505,7 @@
 		}
 	}
 
-	const have_many_due = (value)=>{
+	const haveManyDue = (value)=>{
 		if (value == "true"){
 			document.querySelectorAll("#has_many_due").forEach(el => { el.style.display = ""; });
 		}else{
@@ -480,11 +513,11 @@
 		}
 	}
 
-	const check_select_change=(value)=>{
+	const checkSelectChange=(value)=>{
 
 		let same_value_counter = 0;
 		document.getElementById("select_body").querySelectorAll("select").forEach(select =>{
-		if (value === select.value) {
+		if (value === select.value && value!=="" ) {
 			same_value_counter++;
 		}
 		if(same_value_counter > 1){
@@ -502,7 +535,7 @@ createField(20);
 		const selectCustumer = document.getElementById("custumer_select");
 		const listUser = await fetch("/order/JsonCustumer");
 		const users_json = await listUser.json();
-		selectCustumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected > </option>`);
+		selectCustumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected ></option>`);
 		
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
@@ -560,7 +593,7 @@ createField(20);
 						showConfirmButton: false,
 						timer: 1500
 					}).then(resault => {
-						window.location.reload();
+						window.location.href = "/order/DataType";
 					});
 				} else {
 					Swal.fire('Error > ' + data.error);
@@ -576,7 +609,7 @@ createField(20);
 						showConfirmButton: false,
 						timer: 1500
 					}).then(resault => {
-						window.location.reload();
+						window.location.href = "/order/DataType";
 					});
 				} else {
 					Swal.fire('Error > ' + data.error);
@@ -673,12 +706,12 @@ createField(20);
 
 				
 				if(data.dataType?.rowManyDue){
-					 have_many_due("true");
+					 haveManyDue("true");
 					 document.getElementById("ManyDueDataLong").value = data.dataType?.manyDueDataLong;
 					 document.getElementById("ManyDueDataNo").value = data.dataType?.manyDueDataNo;
 					 document.getElementById("ManyDueSetNo").value = data.dataType?.manyDueSetNo;
 				}else{
-					have_many_due("false");
+					haveManyDue("false");
 					 document.getElementById("ManyDueDataLong").value = data.dataType?.manyDueDataLong;
 					 document.getElementById("ManyDueDataNo").value = data.dataType?.manyDueDataNo;
 					 document.getElementById("ManyDueSetNo").value = data.dataType?.manyDueSetNo;
@@ -716,6 +749,11 @@ createField(20);
 				document.getElementById("Note").value = data.dataType?.note;
 
 				//field
+				let seperaterForm = null;
+				if(data.form.length > 0){
+					seperaterForm = data.form[0]?.separater;
+				}
+				console.log("sep",seperaterForm);
 				let count = 0;
 				const table_body = document.getElementById("select_body");
 				const field_option = ["","DueDate-DMY","DueDate-Dชื่อย่อYY","DueDate-Dชื่อย่อYYYY","DueDate-MDY","DueDate-YMD","DueTime","Flag01","Flag02","Flag03","Flag04","Flag05","Flag06","Flag07","Flag08","Flag09","Flag10","Import By Coding","OrdersNo","PartNo","Period","PlantCode","PONo","Qty","กำหนด Dueโดย TKC"];
@@ -723,23 +761,23 @@ createField(20);
 										<tr>
 										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
 										<td class="text-center  pe-3 min-w-100px">
-											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
+											<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="checkSelectChange(this.value)">
 												${field_option.reduce((prev1,curr1)=> prev1 += ( curr1 == curr?.fieldName ? `<option  selected="selected">${curr1}</option>`:`<option >${curr1}</option>`) ,"")}
 											</select>
 										</td>
 										<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" value="${curr?.startPosition}" name="FieldsList[${count}][StartPosition]">
+													<input type="text" class="text-center" id="input_checker" onChange="checkDataType(this.value)" value="${curr?.startPosition}" name="FieldsList[${count}][StartPosition]">
 										</td>
 											<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" value="${curr?.dataSize}" name="FieldsList[${count++}][EndPosition]">
+													<input type="text" class="text-center" ${curr?.separater === null ? '':'readonly'} id="input_seperater" value="${curr?.dataSize}" name="FieldsList[${count++}][EndPosition]">
 											</td>
 									</tr>` ,"");
-
+				
 				for(let counter=count; counter < 20;counter++){
 					field += `					<tr>
 												<td class="text-start  pe-3 min-w-10px">${counter+1}<input type="hidden" name="FieldsList[${counter}][FieldId]"" value="${counter+1}"> </td>
 												<td class="text-center  pe-3 min-w-100px">
-															<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${counter}][Name]" onchange="check_select_change(this.value)">
+															<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${counter}][Name]" onchange="checkSelectChange(this.value)">
 															<option  selected=""></option>
 															<option >DueDate-DMY</option>
 															<option >DueDate-Dชื่อย่อYY</option>
@@ -769,11 +807,9 @@ createField(20);
 													</select>
 												</td>
 												<td class="text-center pe-3 min-w-100px">
-															<input type="text" class="text-center" name="FieldsList[${counter}][StartPosition]">
+															<input type="text" id="input_checker" class="text-center" onChange="checkDataType(this.value)" name="FieldsList[${counter}][StartPosition]">
 												</td>
-													<td class="text-center pe-3 min-w-100px">
-															<input type="text" class="text-center" name="FieldsList[${counter}][EndPosition]">
-													</td>
+												<td class="text-center pe-3 min-w-100px"><input type="text" ${seperaterForm === null ? '':'readonly'} id="input_seperater" class="text-center" name="FieldsList[${counter}][EndPosition]"></td>
 											</tr>`;
 				}
 
@@ -858,13 +894,14 @@ createField(20);
 	}
 
 	const createField = (fieldCount)=>{
-				const table_body = document.getElementById("select_body");
+		const table_body = document.getElementById("select_body");
+		const have_seperater = document.getElementById("have_seperater").value;
 		let field = "";
 		for(let count=0; count < fieldCount;count++){
 			field += `					<tr>
 										<td class="text-start  pe-3 min-w-10px">${count+1}<input type="hidden" name="FieldsList[${count}][FieldId]"" value="${count+1}"> </td>
 										<td class="text-center  pe-3 min-w-100px">
-													<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="check_select_change(this.value)">
+													<select class="form-select form-select-sm form-select-solid w-200px" name="FieldsList[${count}][Name]" onchange="checkSelectChange(this.value)">
 													<option  selected=""></option>
 													<option >DueDate-DMY</option>
 													<option >DueDate-Dชื่อย่อYY</option>
@@ -894,11 +931,9 @@ createField(20);
 											</select>
 										</td>
 										<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" name="FieldsList[${count}][StartPosition]">
+											<input type="text" class="text-center" id="input_checker" onChange="checkDataType(this.value)" name="FieldsList[${count}][StartPosition]">
 										</td>
-											<td class="text-center pe-3 min-w-100px">
-													<input type="text" class="text-center" name="FieldsList[${count}][EndPosition]">
-											</td>
+										<td class="text-center pe-3 min-w-100px"><input type="text" class="text-center" readonly id="input_seperater" name="FieldsList[${count}][EndPosition]"></td>
 									</tr>`;
 		}
 		table_body.innerHTML = field;
