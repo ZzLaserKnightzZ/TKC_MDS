@@ -166,7 +166,8 @@
 										ระบุพาร์ท :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_part" name="PartNo" disabled>
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_part" disabled>
+											<!--name="PartNo"-->
 											<option value="" data-select2-id="select2-data-24-npyo">0-ทั้งหมด</option>
 										</select>
 									</td>
@@ -637,6 +638,9 @@
 
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
+			if(PART.length > 0){
+				PART.forEach(part => formData.append("PartsNo", part));
+			}
 
 			Swal.fire({
 				title: "คุณแน่ใจแล้วหรือ?",
@@ -673,6 +677,9 @@
 			}*/
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
+			if (PART.length > 0) {
+				PART.forEach(part => formData.append("PartsNo", part));
+			}
 			fetch("/order/SlideIn",{method:"post",body:formData})
 			.then(res=> res.json())
 			.then(data=>{
@@ -695,6 +702,9 @@
 			*/
 			let form = document.getElementById("kt_app_content_container");
 			let formData = new FormData(form);
+			if (PART.length > 0) {
+				PART.forEach(part => formData.append("PartsNo", part));
+			}
 			fetch("/order/SlideOut", { method: "post", body: formData })
 				.then(res => res.json())
 				.then(data => {

@@ -4,7 +4,7 @@
 	{
 		public string? CustID { get; set; }
 		public string? DataType { get; set; }
-		public string? AdjustType { get; set; }
+		public bool? AdjustType { get; set; }
 		public string? PlantCode { get; set; }
 		public string? OrdersNo { get; set; }
 		public string? PONo { get; set; }

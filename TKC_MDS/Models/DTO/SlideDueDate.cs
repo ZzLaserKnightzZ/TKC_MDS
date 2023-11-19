@@ -9,11 +9,8 @@ namespace TKC_MDS.Models.DTO
 		public string DataType { get; set; }
 		public string? PONo { get; set; } 
 		public string? PlantCode { get; set; } 
-		public string? OrdersNo { get; set; } 
-		public string? PartNo { get; set; }
- 
-		
-
+		public string? OrdersNo { get; set; }
+		public List<string>? PartsNo { get; set; } = new List<string>();
 	}
 	public class ShiftDate
 	{

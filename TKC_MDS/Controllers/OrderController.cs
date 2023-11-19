@@ -20,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Channels;
 using TKC_MDS.Data;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
@@ -349,15 +350,30 @@ namespace TKC_MDS.Controllers
 		public async Task<IActionResult> JsonAdjOrder(string? custId, string? dataTypeId)
 		{
 			var date = DateTime.Now;
-			return Json(await _dapperContext.QueryTableAsync<T_SchOrdersPart>($"SELECT * FROM T_SchOrdersPart WHERE CustID={custId} AND DataType={dataTypeId} AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 40"));
+			return Json(await _dapperContext.QueryTableAsync<T_SchOrdersPart>($"SELECT * FROM T_SchOrdersPart WHERE CustID={custId} AND DataType={dataTypeId} AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 100"));
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> CancelOrder([FromForm] SlideDueDate cancel) //string custId, string dataType, string orderNo, string po, string partNo,string plant
 		{
 
-
 			var order = 0;
+			var strMultiPart = string.Empty;
+			if (cancel?.PartsNo?.Count > 0)
+			{
+				strMultiPart += " AND ";
+				int isLast = 0;
+				cancel.PartsNo.ForEach(part =>
+				{
+					strMultiPart += $"PartNo='{part}' ";
+					isLast++;
+					if (isLast < cancel.PartsNo.Count - 1)
+					{
+						strMultiPart += $"OR ";
+					}
+				});
+			}
+
 			try
 			{
 				if (cancel.ShiftDate.Count > 0)
@@ -366,12 +382,12 @@ namespace TKC_MDS.Controllers
 					{
 						var culture = new CultureInfo("en-US");
 						var date = DateTime.Parse(dueDate.FromDate, culture);
-						order += await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(cancel.PartNo) ? $"AND PartNo='{cancel.PartNo}'" : "")} AND DueDate='{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'", new { });
+						order += await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")} AND DueDate='{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'", new { });
 					}
 				}
 				else
 				{
-					order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(cancel.PartNo) ? $"AND PartNo='{cancel.PartNo}'" : "")}", new { });
+					order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")}", new { });
 				}
 
 				return Json(new { msg = "แก้ไขเรียบร้อย " + order + " รายการ" });
@@ -421,38 +437,60 @@ namespace TKC_MDS.Controllers
 			{
 				var updated = 0;
 				var error = string.Empty;
+				var strMultiPart = string.Empty;
+				if (input?.PartsNo?.Count > 0)
+				{
+					strMultiPart += " AND ";
+					int isLast = 0;
+					input.PartsNo.ForEach(part =>
+					{
+						strMultiPart += $"PartNo='{part}' ";
+
+						if (isLast < input.PartsNo.Count - 1)
+						{
+							strMultiPart += $"OR ";
+						}
+						isLast++;
+					});
+				}
+
 				foreach (var shiftDate in input.ShiftDate.OrderBy(x => x.ToDate))
 				{
+
 					try
 					{
 						var culture = new CultureInfo("en-US");
 						var toDate = DateTime.Parse(shiftDate.ToDate, culture);
-						var strToDate = $"'{toDate.Year}-{toDate.Month}-{toDate.Day} {toDate.Hour}:{toDate.Minute}:{toDate.Second}'";
+						var strToDate = $"'{toDate.Year}-{toDate.Month:00}-{toDate.Day:00} {toDate.Hour:00}:{toDate.Minute:00}:{toDate.Second:00}'";
 						var fromDate = DateTime.Parse(shiftDate.FromDate, culture);
-						var strFromDate = $"'{fromDate.Year}-{fromDate.Month}-{fromDate.Day} {fromDate.Hour}:{fromDate.Minute}:{fromDate.Second}'";
+						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00} : {fromDate.Minute:00} : {fromDate.Second:00}'";
 						var date = DateTime.Now;
-						var strDate = $"'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'";
+						var strDate = $"'{date.Year}-{date.Month:00}-{date.Day:00} {date.Hour:00}:{date.Minute:00}:{date.Second:00}'";
+					
 
-						string query_part = $"SELECT * FROM T_SchOrdersPart WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate={strFromDate} {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} AND DATEDIFF(day, T_SchOrdersPart.DueDate,{strDate}) <= 60";
+						string query_part = $"SELECT * FROM T_SchOrdersPart WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate={strFromDate} {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} {strMultiPart} AND DATEDIFF(day, T_SchOrdersPart.DueDate,{strDate}) <= 100";
 						var order_part = await _dapperContext.QueryTableAsync<T_SchOrdersPart>(query_part);
-						string cmd = $"UPDATE T_SchOrdersPart SET DueDate = {strToDate},Period='{shiftDate.ToPeriod}',DueTime='{shiftDate.ToTime}',Status=1 WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate={strFromDate} {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} AND DATEDIFF(day, T_SchOrdersPart.DueDate,{strDate}) <= 60";
+						string cmd = $"UPDATE T_SchOrdersPart SET DueDate = {strToDate},Period='{shiftDate.ToPeriod}',DueTime='{shiftDate.ToTime}',Status=1 WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate={strFromDate} {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} {strMultiPart} AND DATEDIFF(day, T_SchOrdersPart.DueDate,{strDate}) <= 100";
 						var update = await _dapperContext.Update(cmd, new { });
+						updated += update;
 						//update log
 						if (update > 0)//if update success
 						{
 							foreach (var orderUpdated in order_part)
 							{
+								var DueDateF = strFromDate.Substring(1, strFromDate.Length - 2); //remove ''
+								var DueDateT = strToDate.Substring(1, strToDate.Length - 2);  //remove ''
 								var dataType = new T_SchAdjust_Data
 								{
 									DataType = orderUpdated.DataType,
 									CustID = orderUpdated.CustID,
 									OrdersNo = orderUpdated.OrdersNo,
-									AdjustType = "slidein",
+									AdjustType = false,
 									Status = true,//updated
 									PlantCode = orderUpdated.PlantCode,
 									PONo = orderUpdated.PONo,
-									DueDateF = strFromDate,
-									DueDateT = strToDate,
+									DueDateF = DueDateF,
+									DueDateT = DueDateT,
 									DueTimeF = shiftDate.FromTime,
 									DueTimeT = shiftDate.ToTime,
 									PeriodF = shiftDate.FromPeriod,

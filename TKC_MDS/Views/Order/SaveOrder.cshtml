@@ -33,7 +33,7 @@
 							ลูกค้า :
 						</th>
 						<td class="text-end pe-3 min-w-50px">
-								<select class="form-select form-select-sm form-select-solid w-200px" name="CusTumerId" id="select_custumer">
+									<select class="form-select form-select-sm form-select-solid w-200px" name="CusTumerId" id="select_custumer" onchange="selectedDataType()">
 								@*<option value="0" selected="selected" >
 									เลือกลูกค้า
 								</option>
@@ -48,7 +48,7 @@
 							ประเภทข้อมูล :
 						</th>
 						<td class="text-end pe-3 min-w-50px">
-								<select class="form-select form-select-sm form-select-solid w-200px" name="DataType" id="select_dataType">
+									<select class="form-select form-select-sm form-select-solid w-200px" name="DataType" id="select_dataType" onchange="selectedDataType()">
 								@*<option value="0" selected="selected"  >
 									เลือกประเภทข้อมูล
 								</option>
@@ -69,7 +69,7 @@
 			<!--end::Table-->
 			<div class="d-flex justify-content-center">
 					<input type="file" id="inpu_file" accept=".txt, .csv" style="display:none;" />
-				<button onClick="importFile()" class="btn btn-sm fw-bold btn-secondary me-2" >import</button>
+				<button onClick="importFile()" class="btn btn-sm fw-bold btn-secondary me-2" id="btn_import" disabled>import</button>
 				<button class="btn btn-sm fw-bold btn-primary me-2" onclick="SaveOrder()">บันทึก</button>
 				<button class="btn btn-sm fw-bold btn-danger" onclick="clearData()">ล้าง / ยกเลิก</button>
 			</div>
@@ -320,14 +320,17 @@
 						let body = document.getElementById("table_body");
 						body.innerHTML = row.reduce((prev, curr) => prev += `<tr>${curr?.reduce((prev1, curr1) => prev1 += `<td class="text-center  pe-3 min-w-100px">${curr1}</td>`, "")}</tr>`, "");
 					}
-				}			
+				}
 			}
 
 			reader.readAsText(file);
 
 		 }catch(ex){
-			 console.log(ex.message);
+			 console.warn(ex.message);
 			Swal.fire('เกิดข้อผิดพลาด');
+			//e.target.files[0] = null;
+		 }finally{
+
 		 }
 
 	}
@@ -359,38 +362,49 @@
 	}
 
 	const clearData = ()=>{
+		let file = document.getElementById("inpu_file");
+		file.value = "";
+		//window.location.href = "/order/saveorder";
 		let table_data = document.getElementById("table_body");
-		document.getElementById('select_custumer').querySelectorAll('option')[0].selected = 'selected';
-		document.getElementById('select_dataType').querySelectorAll('option')[0].selected = 'selected';
+		//document.getElementById('select_custumer').querySelectorAll('option')[0].selected = 'selected';
+		//document.getElementById('select_dataType').querySelectorAll('option')[0].selected = 'selected';
 		table_data.innerHTML = "";
 		document.getElementById("form_saveData").innerHTML = "";
-		FILLTER_COLUMN_BY_TYPE = [];
-		SEPERATER = null;
+		//FILLTER_COLUMN_BY_TYPE = [];
+		//SEPERATER = null;
+		
 	}
 
 	const importFile = ()=>{
-		document.getElementById("inpu_file").click();
+		let file = document.getElementById("inpu_file");
+		//file.value = [];
+		file.click();
 	}
 
-	const selectedDataType =(e)=>{
+	const selectedDataType =()=>{
 
-		let select_custumer = document.getElementById("select_custumer");
-		const type_code= e.target.value;
+		let select_custumer = document.getElementById("select_custumer").value;
+		const type_code = document.getElementById("select_dataType").value;//e.target.value;
 
-		if (select_custumer.value && type_code) {
-			fetch("/order/JsonFormConv?custId=" + select_custumer.value + "&typeCode="+type_code).then(res => res.json()).then(data => {
+		if (select_custumer && type_code) {
+
+
+			fetch("/order/JsonFormConv?custId=" + select_custumer + "&typeCode="+type_code).then(res => res.json()).then(data => {
 				console.log(data);
+				let btn_import = document.getElementById("btn_import");
 				if(data.length > 0){
+					btn_import.disabled = false;
 					SEPERATER = (data[0].separater === "Tab" ? "\t" : data[0].separater);
 					FILLTER_COLUMN_BY_TYPE = data.map(formConv => {
 						return { field: formConv?.fieldName, start: formConv?.startPosition, size: formConv?.dataSize, dataType: formConv?.dataType };
 					});
 				}else{
+					btn_import.disabled = true;
 					Swal.fire('ไม่พบประเภทข้อมูล');
 				}
 			}).catch(error => console.log(error));
 		}else{
-			Swal.fire('กรุณาเลือก ลูกค้า');
+			//Swal.fire('กรุณาเลือก ลูกค้า');
 		}
 
 	}
