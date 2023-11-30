@@ -132,14 +132,14 @@
 									<th class="text-end  text-gray-400 pe-3 min-w-100px"></th>
 									<td class="text-start pe-3 min-w-30px">
 										<div class="form-group">
-											<div class="radio-inline">
+											<div class="radio-inline" >
 												<label class="radio">
-														<input type="radio" name="ManyDueType" value="true" checked>
+														<input type="radio" name="ManyDueType" value="false" checked>
 													<span></span>
 													Due สลับกับ Qty
 												</label>
 												<label class="radio">
-														<input type="radio" name="ManyDueType" value="false">
+														<input type="radio" name="ManyDueType" value="true">
 													<span></span>
 													Due ติดกับ Due
 												</label>
@@ -695,12 +695,16 @@ createField(20);
 				}
 
 				//manyDueType
-				document.querySelectorAll('input[name="manyDueType"]')
+				/*
+				ดิวติดดิว = 1
+				ดิวติดกับจำนวน = 0
+				*/
+				document.querySelectorAll('input[name="ManyDueType"]')
 				.forEach(radio => {
-					if(data.dataType?.manyDueType === radio.value){
+					if(data.dataType?.manyDueType+"" == radio.value){
 						radio.checked = true;
 					}else{
-						radio.checked = true;
+						radio.checked = false;
 					}
 				});
 

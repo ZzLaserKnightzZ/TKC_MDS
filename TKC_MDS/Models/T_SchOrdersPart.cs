@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace TKC_MDS.Models
 {
-	public partial class T_SchOrdersPart
+	public  class T_SchOrdersPart
 	{
 		public string CustID { get; set; }
 		public string OrdersNo { get; set; }
@@ -16,7 +16,7 @@ namespace TKC_MDS.Models
 		public string DueTime { get; set; } = string.Empty;
 		public string PartNo { get; set; } 
 		public long Qty { get; set; }
-		public short? SentQty { get; set; }
+		public short SentQty { get; set; }
 		public string Flag01 { get; set; } = string.Empty;
 		public string Flag02 { get; set; } = string.Empty;
 		public string Flag03 { get; set; } = string.Empty;

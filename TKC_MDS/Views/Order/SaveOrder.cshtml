@@ -151,13 +151,14 @@
 </div>
 <!--end::Col-->
 </div>
-<form onsubmit="return false" id="form_saveData">
+<!--form onsubmit="return false" id="form_saveData" -->
 
-</form>
+<!--form-->
 <script>
 	var FILLTER_COLUMN_BY_TYPE = [];
+	var DATATYPE_CUST = {};
 	var SEPERATER = null;
-
+	var SJSON_FORM = "";
 
 	const selected_file = (e)=>{
 		try{
@@ -176,15 +177,127 @@
 				const text = reader.result; //อ่านไฟ
 				const line_text = text.split("\r\n"); //แยกแถว
 
-				if (SEPERATER === null || SEPERATER === "") { //ไม่มีตัวขั้น
+				if (SEPERATER === null || SEPERATER === "") { //ไม่มีตัวขั้น if(SEPERATER)
 					if (line_text.length > 0) {
-						const row = [];
+						let row = [];
 						for (let index = 0; index < line_text.length; index++){ //แยกข้อมูลจากแถว
-							row[index] = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start, col.start+col.size));
+							//row[index] = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start, col.start+col.size));
+							if (DATATYPE_CUST?.rowManyDue) { //หนึ่งแถวข้อมูลมีหลายDue :
+								let another_filed = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start, col.start + col.size));
+								//console.log("type",FILLTER_COLUMN_BY_TYPE);
+								const dueDate = FILLTER_COLUMN_BY_TYPE.find(type => type.field.startsWith("DueDate"));
+								const qty = FILLTER_COLUMN_BY_TYPE.find(type => type.field.startsWith("Qty"));
+								//manyDueType
+								/*
+								ดิวติดดิว = 1
+								ดิวติดกับจำนวน = 0
+								*/
+								if (DATATYPE_CUST?.manyDueType) { //Due ติดกับ Due
+									try{
+										let arsDueDate = [],arsQty=[];
+										/*
+										1. 1แถวมีกี่ชุด
+										2. 1ชุดมีกี่ตัว
+										3. ทั้ง 2ตัวมีจุดเริ่มต้นแตกต่างกัน ชุดต่อไป ค่าของความยาวของข้อมูลใน1ชุด
+										4. เริ่มเก็บข้อมูลตามจำนวนชุด ตามจำนวน
+										*/
+										//-------------------dueDate---------------------------
+										let iSet_index_dueDate = dueDate?.start;
+										for (let iDataSet_index = 0; iDataSet_index < DATATYPE_CUST.manyDueSetNo; iDataSet_index++) { //1
+											let sOne_set = line_text[index].substring(iSet_index_dueDate > 0 ? iSet_index_dueDate - dueDate.size - 1:0, iSet_index_dueDate + DATATYPE_CUST.manyDueDataLong /*set + set length*/);//set
+											let iData_index = 0;
+											for (let iDataNo = 0; iDataNo < DATATYPE_CUST.manyDueDataNo; iDataNo++) {//2
+												let sData = sOne_set.substring(iData_index, iData_index + dueDate.size);
+												arsDueDate.push(sData);
+												iData_index += dueDate.size; //next data inedx
+											}
+											iSet_index_dueDate += DATATYPE_CUST.manyDueDataLong; //nextset
+										}
+										//-------------------dueDate---------------------------
+										//-------------------qty-------------------------------
+										let iSet_qty = qty?.start;
+										for (let iDataSet_index = 0; iDataSet_index < DATATYPE_CUST.manyDueSetNo; iDataSet_index++) {
+											let sOne_set = line_text[index].substring(iSet_qty > 0 ? iSet_qty - qty.size - 1 : 0, iSet_qty + DATATYPE_CUST.manyDueDataLong /*set + set length*/);//set
+											let iData_index = 0;
+											for (let iDataNo = 0; iDataNo < DATATYPE_CUST.manyDueDataNo; iDataNo++) {
+												let sData = sOne_set.substring(iData_index, iData_index + qty.size);
+												arsQty.push(sData);
+												iData_index += qty.size;//next data inedx
+											}
+											iSet_qty += DATATYPE_CUST.manyDueDataLong; //nextset
+										}
+										//-------------------qty---------------------------
+										//------------------add data-----------------------
+										let arsDueDate_Qty = [];
+										let iDueDate_index = FILLTER_COLUMN_BY_TYPE.findIndex(type => type.field.startsWith("DueDate"));
+										let iQty_index = FILLTER_COLUMN_BY_TYPE.findIndex(type => type.field.startsWith("Qty"));
+										for (let iAddData_index = 0; iAddData_index < arsDueDate.length; iAddData_index++) {
+											let new_row = [...another_filed];
+											const iQty = Number(arsQty[iAddData_index]); //convert to int
+											new_row[iQty_index] = arsQty[iAddData_index]; //modifire qty
+											new_row[iDueDate_index] = arsDueDate[iAddData_index]; //modifire duedate
+											if (iQty > 0)//filter valuue
+												arsDueDate_Qty.push(new_row); //string[]
+										}
+										row = [...row,...arsDueDate_Qty];
+										//------------------add data-----------------------
+									}catch(ex){
+										console.log(ex);
+									}
+								} else {//Due สลับกับ Qty
+									try {
+										//------------------dueDAte------------------------
+										let iSet_index_dueDate = dueDate?.start;
+										let arsDueDate= [];
+										for (let iDataSet_index = 0; iDataSet_index < DATATYPE_CUST.manyDueSetNo; iDataSet_index++) { 
+											let sOne_set = line_text[index].substring(iSet_index_dueDate > 0 ? iSet_index_dueDate - 1 : 0, iSet_index_dueDate + DATATYPE_CUST.manyDueSetNo - 1);
+											//console.log(sOne_set, iSet_index_dueDate, iSet_index_dueDate + DATATYPE_CUST.manyDueSetNo);
+											let sDueadate = sOne_set.substring(0,dueDate?.size);//ไม่แน่ใจว่า ใน1ชุดมีกี่อัน
+											arsDueDate.push(sDueadate);
+											//console.log(sDueadate);
+											iSet_index_dueDate += DATATYPE_CUST.manyDueSetNo;
+										}
+										//------------------dueDAte------------------------
+										//------------------qty------------------------
+										let iSet_qty = qty?.start;
+										let arsQty=[];
+										for (let iDataSet_index = 0; iDataSet_index < DATATYPE_CUST.manyDueSetNo; iDataSet_index++) {
+											let sOne_set = line_text[index].substring(iSet_qty > 0 ? iSet_qty - 1 : 0, iSet_qty + DATATYPE_CUST.manyDueSetNo - 1);
+											//console.log(sOne_set, iSet_index_dueDate, iSet_index_dueDate + DATATYPE_CUST.manyDueSetNo);
+											let sDueadate = sOne_set.substring(0, qty?.size);//ไม่แน่ใจว่า ใน1ชุดมีกี่อัน
+											arsQty.push(sDueadate);
+											//console.log(sDueadate);
+											iSet_qty += DATATYPE_CUST.manyDueSetNo;
+										}
+										console.log(arsQty, arsDueDate);
+										//------------------qty------------------------
+										//-----------------addata----------------------
+										let arsDueDate_Qty = [];
+										let iDueDate_index = FILLTER_COLUMN_BY_TYPE.findIndex(type => type.field.startsWith("DueDate"));
+										let iQty_index = FILLTER_COLUMN_BY_TYPE.findIndex(type => type.field.startsWith("Qty"));
+										for (let iAddData_index = 0; iAddData_index < arsDueDate.length; iAddData_index++) {
+											let new_row = [...another_filed];
+											const iQty = Number(arsQty[iAddData_index]); //convert to int
+											console.log("qty:"+iQty);
+											new_row[iQty_index] = arsQty[iAddData_index]; //modifire qty
+											new_row[iDueDate_index] = arsDueDate[iAddData_index]; //modifire duedate
+											if (iQty > 0) //filter valuue
+												arsDueDate_Qty.push(new_row); //string[]
+										}
+										row = [...row, ...arsDueDate_Qty];
+										//-----------------addata----------------------
+									} catch (ex) {
+										console.log(ex);
+									}
+								}
+
+							} else { //หนึ่งแถวข้อมูลมีDueเดียว :
+								row.push(FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start > 0 ? col.start - 1:0, col.start + col.size - 1)));
+							}
 						}
 
 						//for check each cols
-						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)");
+						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)|(^[0-9]{1,8}$)");
 						const dueDate = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field.startsWith("DueDate"));
 						const partNo = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "PartNo");
 						const qty = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "Qty");
@@ -219,11 +332,14 @@
 												dueDate_format = `${date[0]}/${date[1]}/${Number(date[2])}`;
 												break;
 											case "DueDate-YMD":
+												/*
 												date = cols[dueDate].split("/");
 												dueDate_format = `${date[1]}/${date[2]}/${Number(date[0])}`;
+												*/
+												dueDate_format = cols[dueDate].replace(/(\d{4})(\d{2})(\d{2})/g, "$2/$3/$1");
+												//cols[dueDate] = dueDate_format;
 												break;
 										}
-										//console.log("dueDate", dueDate_format);
 										cols[dueDate] = dueDate_format;//เปลี่ยนฟอแมทเรียบร้อยเเล้ว
 									}
 									newRow.push(cols);
@@ -232,24 +348,35 @@
 								console.log(ex);
 							}
 						});
-						console.log("found row",row);
-						console.log("filter by DueDate  PartNo Qty", newRow);
+
 						let body = document.getElementById("table_body");
 						body.innerHTML = row.reduce((prev, curr) => prev += `<tr>${curr?.reduce((prev1, curr1) => prev1 += `<td class="text-center  pe-3 min-w-100px">${curr1}</td>`, "")}</tr>`, "");
 
 						const custId = document.getElementById("select_custumer").value;
-						form = newRow.reduce((prev, curr, i) => prev += `<input type = "hidden" name = "[${i}][CustID]" value = "${custId}" >\r\n
-																			<input type = "hidden" name = "[${i}][DataFileName]" value = "${file.name}" >\r\n
-																					<input type = "hidden" name = "[${i}][DataType]" value = "${document.getElementById("select_dataType").value}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.includes("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
-						//console.log(form);
-						document.getElementById("form_saveData").innerHTML = form;
+						
+						//const form = newRow.reduce((prev, curr, i) => prev += `<input type="hidden" name="[${i}][CustID]" value="${custId}" >
+						//													<input type="hidden" name="[${i}][DataFileName]" value="${file.name}" >
+						//													<input type="hidden" name="[${i}][DataType]" value ="${document.getElementById("select_dataType").value}" >` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type="hidden" name="[${i}][${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}]" value="${curr[index]}"> `, ""), "");
+						//document.getElementById("form_saveData").innerHTML = form;
+						
+						const form = newRow.reduce((prev, curr, i) => prev += `{"CustID":"${custId}","DataFileName":"${file.name}","DataType":"${document.getElementById("select_dataType").value}" ${FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `,"${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}":"${curr[index]}"`, "")}},`, "");
+						SJSON_FORM = "[" + form.substring(0, form.length - 1) + "]";//remove tail (,)
+						/*
+						//test
+						console.log(JSON.parse(data1));
+						fetch("/order/SaveOrders", {
+							method: "post", body: data1, headers: {
+								"Content-Type": "application/json",
+							}
+						}).then(res => res.json()).then(d => console.log(d)).catch(error => console.log(error))
+						*/
 
 					}
 				}else{
 					if (line_text.length > 0) {
 						const header = line_text[0].split(SEPERATER);
 						const row = [];
-						let form ="";
+
 
 						for (let index = 1; index < line_text.length - 1; index++) {  //แยกข้อมูลจากแถว
 								const rows = line_text[index].split(SEPERATER);
@@ -257,7 +384,7 @@
 						}
 
 						//for check each cols
-						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)");
+						const regxDate = new RegExp("(^[0-9]+/[0-9]+/[0-9]+$)|(^[0-9]+\-[0-9]+\-[0-9]+$)|(^[0-9]+\\s?[A-Za-z]+\\s?[0-9]+$)|(^[0-9]{1,8}$)");
 						const dueDate = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field.startsWith("DueDate"));
 						const partNo = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "PartNo");
 						const qty = FILLTER_COLUMN_BY_TYPE.findIndex(_ => _.field === "Qty");
@@ -293,11 +420,13 @@
 												dueDate_format = `${date[0]}/${date[1]}/${Number(date[2])}`;
 												break;
 											case "DueDate-YMD":
+												/*
 												date = cols[dueDate].split("/");
 												dueDate_format = `${date[1]}/${date[2]}/${Number(date[0])}`;
+												*/
+												dueDate_format = cols[dueDate].replace(/(\d{4})(\d{2})(\d{2})/g, "$2-$3-$1");
 												break;
 										}
-										//console.log("dueDate", dueDate_format);
 										cols[dueDate] = dueDate_format;//เปลี่ยนฟอแมทเรียบร้อยเเล้ว
 									}
 										newRow.push(cols);
@@ -308,14 +437,18 @@
 
 							});
 
-						console.log("found row", row);
-						console.log("filter by DueDate  PartNo Qty", newRow);
+
 						const custId = document.getElementById("select_custumer").value;
-						form = newRow.reduce((prev, curr, i) => prev += `<input type = "hidden" name = "[${i}][CustID]" value = "${custId}" >\r\n
-																		<input type = "hidden" name = "[${i}][DataFileName]" value = "${file.name}" >\r\n
-																			<input type = "hidden" name = "[${i}][DataType]" value = "${document.getElementById("select_dataType").value}" >\r\n` + FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type = "hidden" name = "[${i}][${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}]" value = "${curr[index]}"> \r\n`, ""), "");
+						/*
+						let form = newRow.reduce((prev, curr, i) => prev += `<input type="hidden" name="[${i}][CustID]" value="${custId}" >
+																		<input type="hidden" name="[${i}][DataFileName]" value="${file.name}" >
+																			<input type="hidden" name = "[${i}][DataType]" value ="${document.getElementById("select_dataType").value}" >` 
+																			+ FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `<input type="hidden" name="[${i}][${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}]" value="${curr[index]}"> `, ""), "");
 						//console.log(form);
 						document.getElementById("form_saveData").innerHTML = form;
+						*/
+						const form = newRow.reduce((prev, curr, i) => prev += `{"CustID":"${custId}","DataFileName":"${file.name}","DataType":"${document.getElementById("select_dataType").value}" ${FILLTER_COLUMN_BY_TYPE.reduce((prev1, curr1, index) => prev1 += `,"${curr1?.field.startsWith("DueDate") ? "DueDate" : curr1?.field}":"${curr[index]}"`, "")}},`, "");
+						SJSON_FORM = "[" + form.substring(0, form.length - 1) + "]";//remove tail (,)
 
 						let body = document.getElementById("table_body");
 						body.innerHTML = row.reduce((prev, curr) => prev += `<tr>${curr?.reduce((prev1, curr1) => prev1 += `<td class="text-center  pe-3 min-w-100px">${curr1}</td>`, "")}</tr>`, "");
@@ -336,12 +469,16 @@
 	}
 
 	const SaveOrder = () =>{
-		const form = document.getElementById("form_saveData");
-		const formData = new FormData(form);
-		fetch("/order/saveorder",{method:"post",body:formData})
+		/*
+		let form = document.getElementById("form_saveData");
+		let formData = new FormData(form);
+		console.log(form,formData);
+		for (const key of formData) {
+			console.log(key);
+		}*/
+		fetch("/order/saveorders", { method: "post", body: SJSON_FORM, headers: { "Content-Type": "application/json", }})
 		.then(res=>res.json())
 		.then(data => {
-			console.log(data);
 				if (data.msg) {
 					Swal.fire({
 						position: 'top-end',
@@ -350,7 +487,7 @@
 						showConfirmButton: false,
 						timer: 1500
 					}).then(resault => {
-						window.location.reload();
+						window.location.href = "/order/SaveOrder";
 					});
 				} else {
 					Swal.fire('Error > ' + data.error);
@@ -388,9 +525,16 @@
 
 		if (select_custumer && type_code) {
 
+			fetch("/order/JsondataType_cust?custId=" + select_custumer + "&typeCode=" + type_code)
+			.then(res=>res.json())
+			.then(data=>{
+					console.log("type>",data);
+					DATATYPE_CUST=data;
+			}).catch(error => console.log(error));
 
-			fetch("/order/JsonFormConv?custId=" + select_custumer + "&typeCode="+type_code).then(res => res.json()).then(data => {
-				console.log(data);
+			fetch("/order/JsonFormConv?custId=" + select_custumer + "&typeCode="+type_code)
+			.then(res => res.json())
+			.then(data => {
 				let btn_import = document.getElementById("btn_import");
 				if(data.length > 0){
 					btn_import.disabled = false;
@@ -417,12 +561,12 @@
 		let select_custumer = document.getElementById("select_custumer");
 		const listUser = await fetch("/order/JsonCustumer");
 		const users_json = await listUser.json();
-		select_custumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected ></option>`);
+		select_custumer.innerHTML = users_json.reduce((prev, curr) => prev += `<option value="${curr?.custID}">${curr?.custID}-${curr?.custName} </option>`, `<option selected value="" >---เลือก---</option>`);
 
 		const dataType = await fetch("/order/JsonDataType_MS");
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
-		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, "<option selected></option>");
+		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, `<option selected value="" > ---เลือก--- </option> `);
 		select_dataType.addEventListener("change", selectedDataType);
 	
 	}
