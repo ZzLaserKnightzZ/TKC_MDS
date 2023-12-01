@@ -507,6 +507,7 @@
 		//document.getElementById('select_dataType').querySelectorAll('option')[0].selected = 'selected';
 		table_data.innerHTML = "";
 		document.getElementById("form_saveData").innerHTML = "";
+		SJSON_FORM="";
 		//FILLTER_COLUMN_BY_TYPE = [];
 		//SEPERATER = null;
 		
@@ -521,7 +522,7 @@
 	const selectedDataType =()=>{
 
 		let select_custumer = document.getElementById("select_custumer").value;
-		const type_code = document.getElementById("select_dataType").value;//e.target.value;
+		const type_code = document.getElementById("select_dataType").value;
 
 		if (select_custumer && type_code) {
 

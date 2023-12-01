@@ -493,6 +493,7 @@
 	const selectOrder = ()=>{
 		const select_custumer = document.getElementById("select_custumer").value;
 		const select_dataType = document.getElementById("select_dataType").value;
+		if (!select_custumer && !select_dataType) return;
 		//fetch dataType 
 		fetch("/order/JsonAdjOrder?custId=" + select_custumer + "&dataTypeId=" + select_dataType)
 		.then(res => res.json())
@@ -656,7 +657,9 @@
 						.then(res => res.json())
 						.then(data => {
 							if (data.msg) {
-								Swal.fire(data.msg);
+								Swal.fire(data.msg).then(() => {
+									//window.location.href = "/order/adjustorder";
+								});;
 							} else {
 								Swal.fire( data.error);
 							}
@@ -708,10 +711,15 @@
 			fetch("/order/SlideOut", { method: "post", body: formData })
 				.then(res => res.json())
 				.then(data => {
-
+					if (data.msg) {
+						Swal.fire(data.msg);
+					} else {
+						Swal.fire(data.error);
+					}
 				})
 				.catch(error => console.log(error));
 			return;
+
 		}
 		Swal.fire('กรุณาเลือก รายการให้ถูกต้อง');
 	}

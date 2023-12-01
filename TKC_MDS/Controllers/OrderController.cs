@@ -176,33 +176,33 @@ namespace TKC_MDS.Controllers
 				{
 					try
 					{
-                        var conv_model = new T_SchFormConv
-                        {
-                            CustId = input.CustID,
-                            TypeCode = input.TypeCode,
-                            Separater = input.Seperator,
-                            RowManyDue = input.RowManyDue,
-                            DataType = false,
-                            UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
+						var conv_model = new T_SchFormConv
+						{
+							CustId = input.CustID,
+							TypeCode = input.TypeCode,
+							Separater = input.Seperator,
+							RowManyDue = input.RowManyDue,
+							DataType = false,
+							UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
 
-                            DataSize = form.EndPosition,
-                            StartPosition = form.StartPosition,
-                            FieldName = form.Name,
-                            FieldId = Convert.ToByte(form.FieldId),
-                            UpdatedDate = $"{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day} {DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}"
-                        };
+							DataSize = form.EndPosition,
+							StartPosition = form.StartPosition,
+							FieldName = form.Name,
+							FieldId = Convert.ToByte(form.FieldId),
+							UpdatedDate = $"{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day} {DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}"
+						};
 
-                        if (!string.IsNullOrEmpty(form.Name))
+						if (!string.IsNullOrEmpty(form.Name))
 						{
 
 							try
 							{
 								var formDb = await _dapperContext.QueryTableAsync<T_SchFormConv>($"SELECT * FROM T_SchFormConv WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';");
-								
+
 								if (formDb.Count() > 0) //ถ้ามีของเดิม update ถ้าไม่มีเพิ่มไหม่
 								{
-                                     //ไม่บันทึก 1.DataTypeX  2.FormType  3.Remark
-                                     await _dapperContext.Update<T_SchFormConv>($"UPDATE T_SchFormConv SET RowManyDue = @RowManyDue,FieldId = @FieldId,FieldName = @FieldName,StartPosition = @StartPosition,DataSize = @DataSize,Separater = @Separater,UpdatedBy = @UpdatedBy,UpdatedDate = @UpdatedDate WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';", conv_model);
+									//ไม่บันทึก 1.DataTypeX  2.FormType  3.Remark
+									await _dapperContext.Update<T_SchFormConv>($"UPDATE T_SchFormConv SET RowManyDue = @RowManyDue,FieldId = @FieldId,FieldName = @FieldName,StartPosition = @StartPosition,DataSize = @DataSize,Separater = @Separater,UpdatedBy = @UpdatedBy,UpdatedDate = @UpdatedDate WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';", conv_model);
 								}
 								else
 								{
@@ -220,18 +220,18 @@ namespace TKC_MDS.Controllers
 						else
 						{
 
-                            //remove no field
-                            if (string.IsNullOrEmpty(conv_model.FieldName))
-                            {
-                                var formDb = await _dapperContext.QueryTableAsync<T_SchFormConv>($"SELECT * FROM T_SchFormConv WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';");
+							//remove no field
+							if (string.IsNullOrEmpty(conv_model.FieldName))
+							{
+								var formDb = await _dapperContext.QueryTableAsync<T_SchFormConv>($"SELECT * FROM T_SchFormConv WHERE CustId='{conv_model.CustId}' AND FieldId={conv_model.FieldId} AND TypeCode='{conv_model.TypeCode}';");
 								if (formDb.Count() > 0)
 								{
 									var remove = formDb.FirstOrDefault();
 									if (remove != null)
-										await _dapperContext.Update<T_SchFormConv>($"DELETE FROM T_SchFormConv WHERE  CustId='{remove.CustId}' AND FieldId={remove.FieldId} AND TypeCode='{remove.TypeCode}' AND FieldName='{remove.FieldName}'",new T_SchFormConv { });
+										await _dapperContext.Update<T_SchFormConv>($"DELETE FROM T_SchFormConv WHERE  CustId='{remove.CustId}' AND FieldId={remove.FieldId} AND TypeCode='{remove.TypeCode}' AND FieldName='{remove.FieldName}'", new T_SchFormConv { });
 								}
-                            }
-                        }
+							}
+						}
 					}
 					catch (Exception ex)
 					{
@@ -280,7 +280,7 @@ namespace TKC_MDS.Controllers
 				//sort
 				var f = input.FieldsList.Where(x => !string.IsNullOrEmpty(x.Name));
 				var i = 1;
-				foreach (var  ff in f)
+				foreach (var ff in f)
 				{
 					ff.FieldId = i;
 					i++;
@@ -292,22 +292,22 @@ namespace TKC_MDS.Controllers
 					{
 						//if (!string.IsNullOrEmpty(form.Name))
 						//{
-							var conv_model = new T_SchFormConv
-							{
-								CustId = input.CustID,
-								TypeCode = input.TypeCode,
-								Separater = input.Seperator,
-								RowManyDue = input.RowManyDue,
-								DataType = false,
-								UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
+						var conv_model = new T_SchFormConv
+						{
+							CustId = input.CustID,
+							TypeCode = input.TypeCode,
+							Separater = input.Seperator,
+							RowManyDue = input.RowManyDue,
+							DataType = false,
+							UpdatedBy = User.Identity?.Name != null ? User.Identity?.Name : "",
 
-								DataSize = form.EndPosition,
-								StartPosition = form.StartPosition,
-								FieldName = form.Name,
-								FieldId = Convert.ToByte(form.FieldId),
-								UpdatedDate = $"{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day} {DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}"
-							};
-							await _dapperContext.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
+							DataSize = form.EndPosition,
+							StartPosition = form.StartPosition,
+							FieldName = form.Name,
+							FieldId = Convert.ToByte(form.FieldId),
+							UpdatedDate = $"{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day} {DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}"
+						};
+						await _dapperContext.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
 						//}
 					}
 					catch (Exception ex)
@@ -330,25 +330,45 @@ namespace TKC_MDS.Controllers
 
 
 		[HttpPost]
-		//[DisableRequestSizeLimit]
-		//[RequestSizeLimit(2000 * 1024 * 1024)]
-		public async Task<IActionResult> SaveOrders([FromBody]List<T_SchOrdersPart> input)
+		public async Task<IActionResult> SaveOrders([FromBody] List<T_SchOrdersPart> input)
 		{
 			try
 			{
-				
-				
+
+
 				if (input != null)
 				{
+					//old part
+					var first_part = input.FirstOrDefault();
+					if (first_part != null)
+					{
+						var old_file = await _dapperContext.QueryTableAsync<T_SchDataType_Cust>($"SELECT * FROM T_SchDataType_Cust WHERE CustID='{first_part.CustID}' AND TypeCode='{first_part.DataType}'");
+						if(old_file != null) { 
+							var isDelete= old_file.FirstOrDefault();
+							if(isDelete != null)
+							if (isDelete.DeleteOld) //is delete old part
+							{
+								try //for none column
+								{
+									await _dapperContext.Update($"DELETE FROM T_SchOrdersPart WHERE CustID='{first_part.CustID}' AND DataType='{first_part.DataType}' AND DataFileName='{first_part.DataFileName}'",new { });
+								}
+								catch(Exception ex)
+								{
+
+								}
+							}
+						}
+					}
+
 					if (input.Count == 0) return Json(new { error = "ไม่มีข้อมูลที่ต้องบันทึก" });
-					var updated =0;
-					foreach (var part in input.OrderByDescending(x => x.DueDate))
+					var updated = 0;
+					foreach (var part in input.OrderByDescending(x => x.DueDate)) //protect date 00/00/0000
 					{
 						try
 						{
 							var culture = new CultureInfo("en-US");
 							var dueDate = DateTime.Parse(part.DueDate, culture); //input date format mm/dd/yyyy
-							var dueYear = dueDate.Year >= 2500 ? dueDate.Year - 543 : dueDate.Year;
+							var dueYear = dueDate.Year >= 2500 ? dueDate.Year - 543 : dueDate.Year; //if พศ.
 							part.DueDate = $"{dueYear}-{dueDate.Month}-{dueDate.Day} {dueDate.Hour}:{dueDate.Minute}:{dueDate.Second}";
 							//part.DataType = part.DataType == "true" ? "1" : "0";
 							var current_date = DateTime.Now;
@@ -362,7 +382,7 @@ namespace TKC_MDS.Controllers
 							//error datetime
 						}
 					}
-					return Json(new { msg = "บันทึกข้อมูลเรียบร้อย" });
+					return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ" });
 				}
 				else
 				{
@@ -390,7 +410,7 @@ namespace TKC_MDS.Controllers
 
 			var order = 0;
 			var strMultiPart = string.Empty;
-			if (cancel?.PartsNo?.Count > 0)
+			if (cancel?.PartsNo?.Count > 0) //filter part
 			{
 				strMultiPart += " AND ";
 				int isLast = 0;
@@ -398,7 +418,7 @@ namespace TKC_MDS.Controllers
 				{
 					strMultiPart += $"PartNo='{part}' ";
 					isLast++;
-					if (isLast < cancel.PartsNo.Count - 1)
+					if (isLast < cancel.PartsNo.Count) //if (isLast < cancel.PartsNo.Count - 1)
 					{
 						strMultiPart += $"OR ";
 					}
@@ -407,18 +427,26 @@ namespace TKC_MDS.Controllers
 
 			try
 			{
-				if (cancel.ShiftDate.Count > 0)
+				if (cancel.ShiftDate.Count > 0) //qty=0 selected 
 				{
 					foreach (var dueDate in cancel.ShiftDate)
 					{
-						var culture = new CultureInfo("en-US");
-						var date = DateTime.Parse(dueDate.FromDate, culture);
-						order += await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")} AND DueDate='{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'", new { });
+						try
+						{
+							var culture = new CultureInfo("en-US");
+							var date = DateTime.Parse(dueDate.FromDate, culture);
+							order += await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")} AND DueDate='{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'", new { });
+						}
+						catch (Exception ex)
+						{
+
+						}
 					}
 				}
-				else
+				else //set qty=0 all ต้องมี order part
 				{
-					order = await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")}", new { });
+					var strSql = $"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")}";
+					order = await _dapperContext.Update(strSql, new { });
 				}
 
 				return Json(new { msg = "แก้ไขเรียบร้อย " + order + " รายการ" });
@@ -498,7 +526,7 @@ namespace TKC_MDS.Controllers
 						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00} : {fromDate.Minute:00} : {fromDate.Second:00}'";
 						var date = DateTime.Now;
 						var strDate = $"'{date.Year}-{date.Month:00}-{date.Day:00} {date.Hour:00}:{date.Minute:00}:{date.Second:00}'";
-					
+
 
 						string query_part = $"SELECT * FROM T_SchOrdersPart WHERE CustID='{input.CustID}' AND DataType ='{input.DataType}' AND DueDate={strFromDate} {((!string.IsNullOrEmpty(input.PlantCode)) ? $"AND PlantCode='{input.PlantCode}'" : "")} {((!string.IsNullOrEmpty(input.OrdersNo)) ? $"AND OrdersNo='{input.OrdersNo}'" : "")} {((!string.IsNullOrEmpty(input.PONo)) ? $"AND PONo='{input.PONo}'" : "")} {strMultiPart} AND DATEDIFF(day, T_SchOrdersPart.DueDate,{strDate}) <= 100";
 						var order_part = await _dapperContext.QueryTableAsync<T_SchOrdersPart>(query_part);
@@ -673,7 +701,7 @@ namespace TKC_MDS.Controllers
 		}
 
 
-		public  IActionResult PrintReportPDF(Report? input)
+		public IActionResult PrintReportPDF(Report? input)
 		{
 			try
 			{
