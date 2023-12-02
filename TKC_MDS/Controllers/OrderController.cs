@@ -18,13 +18,15 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Channels;
 using TKC_MDS.Data;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
-
+using TKC_MDS.ReportModel;
 
 namespace TKC_MDS.Controllers
 {
@@ -343,20 +345,21 @@ namespace TKC_MDS.Controllers
 					if (first_part != null)
 					{
 						var old_file = await _dapperContext.QueryTableAsync<T_SchDataType_Cust>($"SELECT * FROM T_SchDataType_Cust WHERE CustID='{first_part.CustID}' AND TypeCode='{first_part.DataType}'");
-						if(old_file != null) { 
-							var isDelete= old_file.FirstOrDefault();
-							if(isDelete != null)
-							if (isDelete.DeleteOld) //is delete old part
-							{
-								try //for none column
+						if (old_file != null)
+						{
+							var isDelete = old_file.FirstOrDefault();
+							if (isDelete != null)
+								if (isDelete.DeleteOld) //is delete old part
 								{
-									await _dapperContext.Update($"DELETE FROM T_SchOrdersPart WHERE CustID='{first_part.CustID}' AND DataType='{first_part.DataType}' AND DataFileName='{first_part.DataFileName}'",new { });
-								}
-								catch(Exception ex)
-								{
+									try //for none column
+									{
+										await _dapperContext.Update($"DELETE FROM T_SchOrdersPart WHERE CustID='{first_part.CustID}' AND DataType='{first_part.DataType}' AND DataFileName='{first_part.DataFileName}'", new { });
+									}
+									catch (Exception ex)
+									{
 
+									}
 								}
-							}
 						}
 					}
 
@@ -649,6 +652,17 @@ namespace TKC_MDS.Controllers
 						{
 							foreach (var orderUpdated in order_part)
 							{
+								/*
+								 //PartCheck
+								คือค่า 0,1
+								0= ไม่มีการกำหนดพาร์ท
+								1= มีการกำหนดพาร์ท
+								//ActDate
+								คือค่า วันที่และเวลา ในการปรับ
+								AdjustType คือค่า 0,1
+								0= เลือนออก
+								1= เลือนเข้า
+								 */
 								var DueDateF = strFromDate.Substring(1, strFromDate.Length - 2); //remove ''
 								var DueDateT = strToDate.Substring(1, strToDate.Length - 2);  //remove ''
 								var dataType = new T_SchAdjust_Data
@@ -700,7 +714,401 @@ namespace TKC_MDS.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> ReportCSV([FromForm] Report input)
+		{
+			//test custid = 4211 datatype = 01
+			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders  WHERE CustID='{input.CustId}' AND DataType='{input.DataType}'");
+			if (input.DocReportType == "PDF") //pdf
+			{
+				#region hearder pdf
+				void AddCellNoBorder(iText.Layout.Element.Table t, string paragraph)
+				{
+					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+				}
+				void AddCell(iText.Layout.Element.Table t, string paragraph)
+				{
+					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				}
 
+				var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
+				var pathfile = System.IO.Path.Combine(_env.WebRootPath, show_path);
+
+				var memoryStream = new MemoryStream();
+				PdfWriter writer = new PdfWriter(memoryStream);
+				PdfDocument pdfDocument = new PdfDocument(writer);
+				Document document = new Document(pdfDocument, PageSize.A4.Rotate());
+
+				document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+
+				Paragraph p = new Paragraph("Text to the left");
+				p.Add(new Tab());
+				p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
+				p.Add("Text to the center");
+				p.Add(new Tab());
+				p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
+				p.Add("Text to the right");
+				document.Add(p);
+				
+				//header
+				float[] ColumnWidth = { 50f, 50f, 50f, 50f, 150f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f };
+				iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
+				AddCell(table, "MOD");
+				AddCell(table, "KBNo");
+				AddCell(table, "CUST PART");
+				AddCell(table, "TKC PART");
+				AddCell(table, "PART NAME");
+				document.Add(table);
+				//table.AddCell(new Cell().Add(new Paragraph("MOD").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				//table.AddCell(new Cell().Add(new Paragraph("KBNo").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				//table.AddCell(new Cell().Add(new Paragraph("CUST PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				//table.AddCell(new Cell().Add(new Paragraph("TKC PART").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+				//table.AddCell(new Cell().Add(new Paragraph("PART NAME").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+				#endregion
+
+				ulong line_counter = 0; //loop counter
+				var factorys = orders.Select(order => order.FacNo).Distinct().ToList(); //select facno 
+				foreach (var fac in factorys)
+				{
+					var plants = orders.Where(order => order.FacNo == fac).Select(order => order.PlantCode).Distinct().ToList(); //select plant
+					foreach (var plant in plants)
+					{
+						foreach(var print_order in orders.Where(order => order.FacNo == fac && order.PlantCode == plant).ToList())//one day
+						{
+							
+							//print
+							iText.Layout.Element.Table tabledata = new iText.Layout.Element.Table(ColumnWidth);
+
+							tabledata.AddCell(new Cell().Add(new Paragraph(print_order.MODEL).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+							tabledata.AddCell(new Cell().Add(new Paragraph(print_order.KBCd).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+							tabledata.AddCell(new Cell().Add(new Paragraph(print_order.CustPartNo2).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+							tabledata.AddCell(new Cell().Add(new Paragraph(print_order.TKCPartNo).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+							tabledata.AddCell(new Cell().Add(new Paragraph(print_order.PartName).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+							#region day
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day1.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day2.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day3.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day4.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day5.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day6.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day7.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day8.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day9.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day10.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day11.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day12.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day13.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day14.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day15.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day16.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day17.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day18.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day19.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day20.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day21.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day22.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day23.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day24.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day25.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day26.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day27.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day28.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day29.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day30.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day31.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							AddCellNoBorder(tabledata, print_order.Day1.ToString());
+							AddCellNoBorder(tabledata, print_order.Day2.ToString());
+							AddCellNoBorder(tabledata, print_order.Day3.ToString());
+							AddCellNoBorder(tabledata, print_order.Day4.ToString());
+							AddCellNoBorder(tabledata, print_order.Day5.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day6.ToString());
+							AddCellNoBorder(tabledata, print_order.Day7.ToString());
+							AddCellNoBorder(tabledata, print_order.Day8.ToString());
+							AddCellNoBorder(tabledata, print_order.Day9.ToString());
+							AddCellNoBorder(tabledata, print_order.Day10.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day11.ToString());
+							AddCellNoBorder(tabledata, print_order.Day12.ToString());
+							AddCellNoBorder(tabledata, print_order.Day13.ToString());
+							AddCellNoBorder(tabledata, print_order.Day14.ToString());
+							AddCellNoBorder(tabledata, print_order.Day15.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day16.ToString());
+							AddCellNoBorder(tabledata, print_order.Day17.ToString());
+							AddCellNoBorder(tabledata, print_order.Day18.ToString());
+							AddCellNoBorder(tabledata, print_order.Day19.ToString());
+							AddCellNoBorder(tabledata, print_order.Day20.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day21.ToString());
+							AddCellNoBorder(tabledata, print_order.Day22.ToString());
+							AddCellNoBorder(tabledata, print_order.Day23.ToString());
+							AddCellNoBorder(tabledata, print_order.Day24.ToString());
+							AddCellNoBorder(tabledata, print_order.Day25.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day26.ToString());
+							AddCellNoBorder(tabledata, print_order.Day27.ToString());
+							AddCellNoBorder(tabledata, print_order.Day28.ToString());
+							AddCellNoBorder(tabledata, print_order.Day29.ToString());
+							AddCellNoBorder(tabledata, print_order.Day30.ToString());
+
+							AddCellNoBorder(tabledata, print_order.Day31.ToString());
+							#endregion
+							//table.AddCell(new Cell().Add(new Paragraph(print_order.Total.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+							AddCellNoBorder(tabledata, print_order.Total.ToString());
+
+							document.Add(tabledata);
+						}
+					}
+					//regionsum amount of factory
+					var day = orders.Where(order => order.FacNo == fac);
+					var fday1 = day.Select(order => order.Day1).Sum(); 
+					var fday2 = day.Select(order => order.Day2).Sum();
+					var fday3 = day.Select(order => order.Day3).Sum();
+					var fday4 = day.Select(order => order.Day4).Sum();
+					var fday5 = day.Select(order => order.Day5).Sum();
+					var fday6 = day.Select(order => order.Day6).Sum();
+					var fday7 = day.Select(order => order.Day7).Sum();
+					var fday8 = day.Select(order => order.Day8).Sum();
+					var fday9 = day.Select(order => order.Day9).Sum();
+					var fday10 = day.Select(order => order.Day10).Sum();
+					var fday11 = day.Select(order => order.Day11).Sum();
+					var fday12 = day.Select(order => order.Day12).Sum();
+					var fday13 = day.Select(order => order.Day13).Sum();
+					var fday14 = day.Select(order => order.Day14).Sum();
+					var fday15 = day.Select(order => order.Day15).Sum();
+					var fday16 = day.Select(order => order.Day16).Sum();
+					var fday17 = day.Select(order => order.Day17).Sum();
+					var fday18 = day.Select(order => order.Day18).Sum();
+					var fday19 = day.Select(order => order.Day19).Sum();
+					var fday20 = day.Select(order => order.Day20).Sum();
+					var fday21 = day.Select(order => order.Day21).Sum();
+					var fday22 = day.Select(order => order.Day22).Sum();
+					var fday23 = day.Select(order => order.Day23).Sum();
+					var fday24 = day.Select(order => order.Day24).Sum();
+					var fday25 = day.Select(order => order.Day25).Sum();
+					var fday26 = day.Select(order => order.Day26).Sum();
+					var fday27 = day.Select(order => order.Day27).Sum();
+					var fday28 = day.Select(order => order.Day28).Sum();
+					var fday29 = day.Select(order => order.Day29).Sum(); 
+					var fday30 = day.Select(order => order.Day30).Sum();
+					var fday31 = day.Select(order => order.Day31).Sum();
+					decimal fTotal = 0;
+					foreach (var ftotal in day)
+					{
+						fTotal += ftotal.Total;
+					}
+					//print
+					iText.Layout.Element.Table table_sum_fac = new iText.Layout.Element.Table(ColumnWidth);
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph("").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					//tabledata.AddCell(new Cell().Add(new Paragraph("").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					//tabledata.AddCell(new Cell().Add(new Paragraph("").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					//tabledata.AddCell(new Cell().Add(new Paragraph("").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					//tabledata.AddCell(new Cell().Add(new Paragraph("Factory: "+fac+" Plant: "+plants+" Total : ").SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					AddCell(table_sum_fac, "");
+					AddCell(table_sum_fac, "");
+					AddCell(table_sum_fac, "");
+					AddCell(table_sum_fac, "");
+					AddCell(table_sum_fac, "Factory: " + fac + " Plant: " + plants + " Total : ");
+
+					#region day
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday1.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday2.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday3.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday4.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday5.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday6.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday7.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday8.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday9.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday10.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday11.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday12.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday13.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday14.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday15.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday16.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday17.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday18.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday19.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday20.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday21.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday22.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday23.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday24.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday25.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday26.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday27.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday28.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday29.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday30.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fday31.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					AddCellNoBorder(table_sum_fac, fday1.ToString());
+					AddCellNoBorder(table_sum_fac, fday2.ToString());
+					AddCellNoBorder(table_sum_fac, fday3.ToString());
+					AddCellNoBorder(table_sum_fac, fday4.ToString());
+					AddCellNoBorder(table_sum_fac, fday5.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday6.ToString());
+					AddCellNoBorder(table_sum_fac, fday7.ToString());
+					AddCellNoBorder(table_sum_fac, fday8.ToString());
+					AddCellNoBorder(table_sum_fac, fday9.ToString());
+					AddCellNoBorder(table_sum_fac, fday10.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday11.ToString());
+					AddCellNoBorder(table_sum_fac, fday12.ToString());
+					AddCellNoBorder(table_sum_fac, fday13.ToString());
+					AddCellNoBorder(table_sum_fac, fday14.ToString());
+					AddCellNoBorder(table_sum_fac, fday15.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday16.ToString());
+					AddCellNoBorder(table_sum_fac, fday17.ToString());
+					AddCellNoBorder(table_sum_fac, fday18.ToString());
+					AddCellNoBorder(table_sum_fac, fday19.ToString());
+					AddCellNoBorder(table_sum_fac, fday20.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday21.ToString());
+					AddCellNoBorder(table_sum_fac, fday22.ToString());
+					AddCellNoBorder(table_sum_fac, fday23.ToString());
+					AddCellNoBorder(table_sum_fac, fday24.ToString());
+					AddCellNoBorder(table_sum_fac, fday25.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday26.ToString());
+					AddCellNoBorder(table_sum_fac, fday27.ToString());
+					AddCellNoBorder(table_sum_fac, fday28.ToString());
+					AddCellNoBorder(table_sum_fac, fday29.ToString());
+					AddCellNoBorder(table_sum_fac, fday30.ToString());
+
+					AddCellNoBorder(table_sum_fac, fday31.ToString());
+					#endregion
+					//tabledata.AddCell(new Cell().Add(new Paragraph(fTotal.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					AddCellNoBorder(table_sum_fac, fTotal.ToString());
+					document.Add(table_sum_fac);
+
+				}
+				#region sum all
+				//sum all of query
+				var day1 = orders.Select(order => order.Day1).Sum();
+				var day2 = orders.Select(order => order.Day2).Sum();
+				var day3 = orders.Select(order => order.Day3).Sum();
+				var day4 = orders.Select(order => order.Day4).Sum();
+				var day5 = orders.Select(order => order.Day5).Sum();
+				var day6 = orders.Select(order => order.Day6).Sum();
+				var day7 = orders.Select(order => order.Day7).Sum();
+				var day8 = orders.Select(order => order.Day8).Sum();
+				var day9 = orders.Select(order => order.Day9).Sum();
+				var day10 = orders.Select(order => order.Day10).Sum();
+				var day11 = orders.Select(order => order.Day11).Sum();
+				var day12 = orders.Select(order => order.Day12).Sum();
+				var day13 = orders.Select(order => order.Day13).Sum();
+				var day14 = orders.Select(order => order.Day14).Sum();
+				var day15 = orders.Select(order => order.Day15).Sum();
+				var day16 = orders.Select(order => order.Day16).Sum();
+				var day17 = orders.Select(order => order.Day17).Sum();
+				var day18 = orders.Select(order => order.Day18).Sum();
+				var day19 = orders.Select(order => order.Day19).Sum();
+				var day20 = orders.Select(order => order.Day20).Sum();
+				var day21 = orders.Select(order => order.Day21).Sum();
+				var day22 = orders.Select(order => order.Day22).Sum();
+				var day23 = orders.Select(order => order.Day23).Sum();
+				var day24 = orders.Select(order => order.Day24).Sum();
+				var day25 = orders.Select(order => order.Day25).Sum();
+				var day26 = orders.Select(order => order.Day26).Sum();
+				var day27 = orders.Select(order => order.Day27).Sum();
+				var day28 = orders.Select(order => order.Day28).Sum();
+				var day29 = orders.Select(order => order.Day29).Sum();
+				var day30 = orders.Select(order => order.Day30).Sum();
+				var day31 = orders.Select(order => order.Day31).Sum();
+				decimal total = 0;
+				foreach (var ftotal in orders)
+				{
+					total += ftotal.Total;
+				}
+				
+				iText.Layout.Element.Table t = new iText.Layout.Element.Table(ColumnWidth);
+				AddCellNoBorder(t, day1.ToString());
+				AddCellNoBorder(t, day2.ToString());
+				AddCellNoBorder(t, day3.ToString());
+				AddCellNoBorder(t, day4.ToString());
+				AddCellNoBorder(t, day5.ToString());
+
+				AddCellNoBorder(t, day6.ToString());
+				AddCellNoBorder(t, day7.ToString());
+				AddCellNoBorder(t, day8.ToString());
+				AddCellNoBorder(t, day9.ToString());
+				AddCellNoBorder(t, day10.ToString());
+
+				AddCellNoBorder(t, day11.ToString());
+				AddCellNoBorder(t, day12.ToString());
+				AddCellNoBorder(t, day13.ToString());
+				AddCellNoBorder(t, day14.ToString());
+				AddCellNoBorder(t, day15.ToString());
+
+				AddCellNoBorder(t, day16.ToString());
+				AddCellNoBorder(t, day17.ToString());
+				AddCellNoBorder(t, day18.ToString());
+				AddCellNoBorder(t, day19.ToString());
+				AddCellNoBorder(t, day20.ToString());
+
+				AddCellNoBorder(t, day21.ToString());
+				AddCellNoBorder(t, day22.ToString());
+				AddCellNoBorder(t, day23.ToString());
+				AddCellNoBorder(t, day24.ToString());
+				AddCellNoBorder(t, day25.ToString());
+
+				AddCellNoBorder(t, day26.ToString());
+				AddCellNoBorder(t, day27.ToString());
+				AddCellNoBorder(t, day28.ToString());
+				AddCellNoBorder(t, day29.ToString());
+				AddCellNoBorder(t, day30.ToString());
+
+				AddCellNoBorder(t, day31.ToString());
+				#endregion
+				AddCellNoBorder(t,total.ToString());
+				/*
+				//new page
+				document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+				document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+				document.Add(p);
+				document.Add(table);
+				*/
+				document.Add(t);
+
+				document.Close();
+
+				return File(memoryStream.ToArray(), "application/pdf", "CustId: " + input.CustId + " DataType:" + input.DataType + ".pdf");
+			}
+			else //csv
+			{
+
+				StringBuilder file = new StringBuilder();
+				var listOrder = orders.ToList();
+				//header
+				var header = $"MOD,KBNo,CustPartNo2,TKCPartNo,PartName,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,8,19,20,21,22,23,24,25,26,27,28,29,30,31,Total\r\n";
+				file.Append(header);
+				listOrder.ForEach(x =>
+				{
+					var line = $"{x.MODEL},{x.KBCd},{x.CustPartNo2},{x.TKCPartNo},{x.PartName},{x.Day1},{x.Day2},{x.Day3},{x.Day4},{x.Day5},{x.Day6},{x.Day7},{x.Day8},{x.Day9},{x.Day10},{x.Day11},{x.Day12},{x.Day13},{x.Day14},{x.Day15},{x.Day16},{x.Day17},{x.Day18},{x.Day19},{x.Day20},{x.Day21},{x.Day22},{x.Day23},{x.Day24},{x.Day25},{x.Day26},{x.Day27},{x.Day28},{x.Day29},{x.Day30},{x.Day31},{x.Total}\r\n";
+					file.Append(line);
+				});
+				return File(Encoding.UTF8.GetBytes(file.ToString()), "text/csv", "CustId: "+input.CustId +" DataType: "+input.DataType+".csv");
+			}
+		} 
 		public IActionResult PrintReportPDF(Report? input)
 		{
 			try
@@ -773,7 +1181,7 @@ namespace TKC_MDS.Controllers
 
 				document.Close();
 
-				return File(memoryStream.ToArray(), "application/pdf", input?.CustId + "_" + input?.DataType + "_" + input?.DueTime + ".pdf");
+				return File(memoryStream.ToArray(), "application/pdf", "CustId: " + input.CustId + " DataType:" + input.DataType + ".pdf");
 			}
 			catch (Exception ex)
 			{

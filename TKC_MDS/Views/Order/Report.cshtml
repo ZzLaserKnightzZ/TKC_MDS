@@ -82,6 +82,17 @@
 									</td>
 								</tr>
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+									<th class="text-end  text-gray-400 pe-3 min-w-100px">
+										export ประเภท :
+									</th>
+									<td class="text-end pe-3 min-w-50px">
+										<select class="form-select form-select-sm form-select-solid w-200px" name="DocReportType">
+											<option value="PDF" selected>PDF</option>
+											<option value="CSV">CSV(excell)</option>
+										</select>
+									</td>
+								</tr>
+								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-dark pe-3 min-w-100px">
 										เพิ่มเติม
 									</th>
@@ -151,7 +162,7 @@
 	const openFile = ()=>{
 		let form = document.getElementById("kt_app_content");
 		let formData = new FormData(form);
-		fetch("/order/PrintReportPDF",{method:"post",body:formData}).then(res => res.blob()).then(blob => {
+		fetch("/order/ReportCSV", { method: "post", body: formData }).then(res => res.blob()).then(blob => {
 			console.log(blob)
 			if (blob.error) {
 				Swal.fire('เกิดข้อผิดพลาด '+data.error);
