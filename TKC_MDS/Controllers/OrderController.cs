@@ -24,6 +24,7 @@ using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Channels;
 using TKC_MDS.Data;
+using TKC_MDS.Migrations;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
 using TKC_MDS.ReportModel;
@@ -725,10 +726,18 @@ namespace TKC_MDS.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> ReportCSV([FromForm] Report input)
+		public async Task<IActionResult> GetMounthReport(string custId,string dataType)
+		{
+			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders  WHERE CustID='{custId}' AND DataType='{dataType}'");
+			var orderMonth = orders.Select(x => x.nMonth).Distinct().ToList();
+			return Json(orderMonth);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Report([FromForm] Report input)
 		{
 			//test custid = 4211 datatype = 01
-			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders"); // WHERE CustID='{input.CustId}' AND DataType='{input.DataType}'
+			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders  WHERE CustID='{input.CustId}' AND DataType='{input.DataType}'"); // WHERE CustID='{input.CustId}' AND DataType='{input.DataType}' AND nMonth='{input.ReportMount}'
 			if (input.DocReportType == "PDF") //pdf
 			{
 				#region hearder pdf
@@ -1102,11 +1111,14 @@ namespace TKC_MDS.Controllers
 				StringBuilder file = new StringBuilder();
 				var listOrder = orders.ToList();
 				//header
-				var header = $"MOD,KBNo,CustPartNo2,TKCPartNo,PartName,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,8,19,20,21,22,23,24,25,26,27,28,29,30,31,Total\r\n";
+				//var header = $"MOD,KBNo,CustPartNo2,TKCPartNo,PartName,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,8,19,20,21,22,23,24,25,26,27,28,29,30,31,Total\r\n";
+				//file.Append(header);
+				var header = $"MOD,KBNo,CustPartNo2,TKCPartNo,PartName,PartNo,Line,CustPartNo2,Expr1,FacNo,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,8,19,20,21,22,23,24,25,26,27,28,29,30,31,Total\r\n";
 				file.Append(header);
 				listOrder.ForEach(x =>
 				{
-					var line = $"{x.MODEL},{x.KBCd},{x.CustPartNo2},{x.TKCPartNo},{x.PartName},{x.Day1},{x.Day2},{x.Day3},{x.Day4},{x.Day5},{x.Day6},{x.Day7},{x.Day8},{x.Day9},{x.Day10},{x.Day11},{x.Day12},{x.Day13},{x.Day14},{x.Day15},{x.Day16},{x.Day17},{x.Day18},{x.Day19},{x.Day20},{x.Day21},{x.Day22},{x.Day23},{x.Day24},{x.Day25},{x.Day26},{x.Day27},{x.Day28},{x.Day29},{x.Day30},{x.Day31},{x.Total}\r\n";
+					//var line = $"{x.MODEL},{x.KBCd},{x.CustPartNo2},{x.TKCPartNo},{x.PartName},{x.Day1},{x.Day2},{x.Day3},{x.Day4},{x.Day5},{x.Day6},{x.Day7},{x.Day8},{x.Day9},{x.Day10},{x.Day11},{x.Day12},{x.Day13},{x.Day14},{x.Day15},{x.Day16},{x.Day17},{x.Day18},{x.Day19},{x.Day20},{x.Day21},{x.Day22},{x.Day23},{x.Day24},{x.Day25},{x.Day26},{x.Day27},{x.Day28},{x.Day29},{x.Day30},{x.Day31},{x.Total}\r\n";
+					var line = $"{x.MODEL},{x.KBCd},{x.CustPartNo2},{x.TKCPartNo},{x.PartName},{x.PartNo},{x.Line},{x.CustPartNo2},{x.Expr1},{x.FacNo},{x.Day1},{x.Day2},{x.Day3},{x.Day4},{x.Day5},{x.Day6},{x.Day7},{x.Day8},{x.Day9},{x.Day10},{x.Day11},{x.Day12},{x.Day13},{x.Day14},{x.Day15},{x.Day16},{x.Day17},{x.Day18},{x.Day19},{x.Day20},{x.Day21},{x.Day22},{x.Day23},{x.Day24},{x.Day25},{x.Day26},{x.Day27},{x.Day28},{x.Day29},{x.Day30},{x.Day31},{x.Total}\r\n";
 					file.Append(line);
 				});
 				return File(Encoding.UTF8.GetBytes(file.ToString()), "text/csv", "CustId: "+input.CustId +" DataType: "+input.DataType+".csv");

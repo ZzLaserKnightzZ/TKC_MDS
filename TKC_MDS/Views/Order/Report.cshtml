@@ -38,7 +38,7 @@
 										ลูกค้า :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustId">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_custumer" name="CustId" onchange="getMounthReport()">
 											@*
 											<option value="0" selected="selected" disabled="" data-select2-id="select2-data-3-8t7j">
 												เลือกลูกค้า
@@ -51,7 +51,7 @@
 										ประเภทข้อมูล :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" name="DataType">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_dataType" name="DataType" onchange="getMounthReport()">
 											@*<option value="0" selected="selected" disabled="" data-select2-id="select2-data-6-mm44"></option>
 											<option value="1">4302-MITSUBISHI P/C</option>
 											<option value="2">4303-TOYOTA </option>*@
@@ -74,7 +74,7 @@
 										เดือนรายงาน :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" name="ReportMount">
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_month" name="ReportMount">
 											@*<option value="1" data-select2-id="select2-data-12-7me1">06-2023</option>
 											<option value="1">07-2023</option>
 											<option value="1">08-2023</option>*@
@@ -159,10 +159,21 @@
 </form>
 
 <script>
+	const getMounthReport = ()=>{
+		const custId = document.getElementById("select_custumer").value;
+		const dataType = document.getElementById("select_dataType").value;
+		fetch("/order/GetMounthReport?custId=" + custId + "&dataType=" + dataType, { method: "post" }).then(res => res.json()).then(data => {
+			console.log(data);
+			let html = data.reduce((prev, curr) => prev += `<option  value="${curr}" >${curr}</option>`, `<option selected value="" >---เลือก---</option>`);
+			document.getElementById("select_month").innerHTML = html;
+
+		}).catch(error => console.log(error));
+	}
+
 	const openFile = ()=>{
 		let form = document.getElementById("kt_app_content");
 		let formData = new FormData(form);
-		fetch("/order/ReportCSV", { method: "post", body: formData }).then(res => res.blob()).then(blob => {
+		fetch("/order/Report", { method: "post", body: formData }).then(res => res.blob()).then(blob => {
 			console.log(blob)
 			if (blob.error) {
 				Swal.fire('เกิดข้อผิดพลาด '+data.error);
