@@ -3,24 +3,24 @@
     public class View_Report
     {
 		public bool ShowInSch { get; set; }
-		public string CustID { get; set; }
-		public string PlantCode { get; set; }
-		public string PartNo { get; set; }
-		public string DataType { get; set; }
-		public string nMonth { get; set; }
+		public string? CustID { get; set; }
+		public string? PlantCode { get; set; }
+		public string? PartNo { get; set; }
+		public string? DataType { get; set; }
+		public string? nMonth { get; set; }
 		//-------------------------------------
 		public decimal Total { get; set; }
-		public string nYear { get; set; }
-		public string FacNo { get; set; }
+		public string? nYear { get; set; }
+		public string? FacNo { get; set; }
 		public int CustID2 { get; set; }
-		public string CustPartNo2 { get; set; }
-		public string MODEL { get; set; }
-		public string Line { get; set; }
-		public string KBCd { get; set; }
-		public string TKCPartNo { get; set; }
-		public string PartName { get; set; }
-		public string CustName { get; set; }
-		public string Expr1 { get; set; }
+		public string? CustPartNo2 { get; set; }
+		public string? MODEL { get; set; }
+		public string? Line { get; set; }
+		public string? KBCd { get; set; }
+		public string? TKCPartNo { get; set; }
+		public string? PartName { get; set; }
+		public string? CustName { get; set; }
+		public string? Expr1 { get; set; }
 		//-------------------------------------
 
 		public decimal Day1 { get; set; }
