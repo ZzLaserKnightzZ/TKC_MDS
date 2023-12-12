@@ -2,6 +2,7 @@
 {
     public static class ConstanceRoles
     {
+		/*
         public const string ViewOrder = "ViewOrder";
 		public const string CreateOrder = "CreateOrder";
 		public const string EditOrder = "EditOrder";
@@ -21,6 +22,13 @@
 		public const string CreateReport = "CreateReport";
 		public const string EditReport = "EditReport";
 		public const string DeleteReport = "DeleteReport";
+		*/
+
+		public const string SaveOrder = "SaveOrder";
+		public const string AdjustOrder = "AdjustOrder";
+		public const string DataType = "DataType";
+		public const string Report = "Report";
+
 
 		public const string ViewUser = "ViewUser";
 		public const string CreateUser = "CreateUser";

@@ -657,7 +657,7 @@
 					'success'
 				).then(resault => {
 
-					window.location.reload();
+					window.location.href = "/user/index";
 				});
 			} else {
 				Swal.fire(
@@ -682,13 +682,13 @@
 				confirmButtonText: 'ลบ'
 			}).then((result) => {
 				if (result.isConfirmed) {
-					fetch("/user/DeleteUser?id="+id,{method:"delete"}).then(res => res.json()).then(data => {
+					fetch("/user/DeleteUser?id="+id,{method:"post"}).then(res => res.json()).then(data => {
 						Swal.fire(
 							'Deleted!',
 							'ลบข้อมูลเรียบร้อย',
 							'success'
 						).then(resault => {
-							window.location.reload();
+							window.location.href = "/user/index";
 						});
 					}).catch(error => console.log(error));
 				}

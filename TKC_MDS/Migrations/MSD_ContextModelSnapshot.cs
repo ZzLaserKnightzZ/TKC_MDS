@@ -141,7 +141,6 @@ namespace TKC_MDS.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -231,57 +230,6 @@ namespace TKC_MDS.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("TKC_MDS.Models.AdjustOrderRoles", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AdjustOrderRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("720c2579-c33b-4112-85c4-bcc5e1f0ab87"),
-                            Description = "View",
-                            Name = "ViewAdjustOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3696)
-                        },
-                        new
-                        {
-                            Id = new Guid("36d45827-65b2-42cd-9be7-6f6475199a1f"),
-                            Description = "Create",
-                            Name = "CreateAdjustOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3700)
-                        },
-                        new
-                        {
-                            Id = new Guid("7ba630a8-7fc7-4c8d-878a-a07ef1ef74fe"),
-                            Description = "Edit",
-                            Name = "EditAdjustOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3701)
-                        },
-                        new
-                        {
-                            Id = new Guid("01888449-b0fb-4688-b3fc-f561e0c0b6a6"),
-                            Description = "Delete",
-                            Name = "DeleteAdjustOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3702)
-                        });
-                });
-
             modelBuilder.Entity("TKC_MDS.Models.ClaimRole", b =>
                 {
                     b.Property<int>("Id")
@@ -314,57 +262,6 @@ namespace TKC_MDS.Migrations
                     b.ToTable("ClaimRoles");
                 });
 
-            modelBuilder.Entity("TKC_MDS.Models.DataTypeRoles", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DataTypeRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("df92b7fd-c074-4a38-b9b4-cd885ac20651"),
-                            Description = "View",
-                            Name = "ViewDataType",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3722)
-                        },
-                        new
-                        {
-                            Id = new Guid("1240fa61-839c-42a5-a3d4-a1c510e86c41"),
-                            Description = "Create",
-                            Name = "CreateDataType",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3725)
-                        },
-                        new
-                        {
-                            Id = new Guid("63a57b84-a0d8-4055-8b2f-e9cfd4760bdb"),
-                            Description = "Edit",
-                            Name = "EditDataType",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3726)
-                        },
-                        new
-                        {
-                            Id = new Guid("ff829346-6424-4d0b-928e-8d9c60a8abdc"),
-                            Description = "Delete",
-                            Name = "DeleteDataType",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3727)
-                        });
-                });
-
             modelBuilder.Entity("TKC_MDS.Models.ManageUserRoles", b =>
                 {
                     b.Property<Guid>("Id")
@@ -388,35 +285,35 @@ namespace TKC_MDS.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("9ecc9436-fe70-4f2c-814e-f755b1910588"),
+                            Id = new Guid("15ff518b-e8f8-4066-aee1-afe399fe855f"),
                             Description = "View",
                             Name = "ViewUser",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3763)
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2103)
                         },
                         new
                         {
-                            Id = new Guid("8729a742-c1e9-457e-91bf-8463291f10c5"),
+                            Id = new Guid("828fceba-0dcb-425f-ae1b-592be8aa0459"),
                             Description = "Create",
                             Name = "CreateUser",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3769)
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2106)
                         },
                         new
                         {
-                            Id = new Guid("f568b7d0-d039-4d95-a9c8-63f99ac396e5"),
+                            Id = new Guid("2759ba74-8b51-40bd-ba7b-f37cd20470ac"),
                             Description = "Edit",
                             Name = "EditUser",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3770)
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2123)
                         },
                         new
                         {
-                            Id = new Guid("8e45ada1-17c4-4139-bb0d-e410a8867f6b"),
+                            Id = new Guid("684ff7db-a30d-476b-bc23-853d83ef1e91"),
                             Description = "Delete",
                             Name = "DeleteUser",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3771)
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2124)
                         });
                 });
 
-            modelBuilder.Entity("TKC_MDS.Models.ReportRoles", b =>
+            modelBuilder.Entity("TKC_MDS.Models.MDS_Roles", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -434,87 +331,36 @@ namespace TKC_MDS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ReportRoles");
+                    b.ToTable("MDS_Roles");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4bb918ae-0769-4a48-89e8-c6cc855f462b"),
-                            Description = "View",
-                            Name = "ViewReport",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3743)
+                            Id = new Guid("ccc28e14-8308-42b3-abfc-ce1671f33a29"),
+                            Description = "Save Order page",
+                            Name = "SaveOrder",
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2061)
                         },
                         new
                         {
-                            Id = new Guid("da7dde0a-fb29-47a4-bd77-42c775448aa9"),
-                            Description = "Create",
-                            Name = "CreateReport",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3746)
+                            Id = new Guid("5cc848c6-0767-4c5a-b579-fd1fb87cd498"),
+                            Description = "Adjust Order Page",
+                            Name = "AdjustOrder",
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2070)
                         },
                         new
                         {
-                            Id = new Guid("e677b707-dfa1-4d8c-b4df-e8ddf5bdb1cd"),
-                            Description = "Edit",
-                            Name = "EditReport",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3747)
+                            Id = new Guid("19d4659d-f491-4b85-8adb-34436c856723"),
+                            Description = "DataType",
+                            Name = "DataType",
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2071)
                         },
                         new
                         {
-                            Id = new Guid("ce18635f-def9-444f-8fde-ee6cfe01c0c3"),
-                            Description = "Delete",
-                            Name = "DeleteReport",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3748)
-                        });
-                });
-
-            modelBuilder.Entity("TKC_MDS.Models.SaveOrderRoles", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SaveOrderRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("6c9fc2f8-f79a-473b-b030-ee41a2eab728"),
-                            Description = "View",
-                            Name = "ViewOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3618)
-                        },
-                        new
-                        {
-                            Id = new Guid("dc488437-652c-4755-bc33-7a3f00e71d57"),
-                            Description = "Create",
-                            Name = "CreateOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3622)
-                        },
-                        new
-                        {
-                            Id = new Guid("4719b151-04ad-40a9-8a42-b68caf7c1052"),
-                            Description = "Edit",
-                            Name = "EditOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3646)
-                        },
-                        new
-                        {
-                            Id = new Guid("dd6892be-adaa-4b7a-9db8-033bcd0e8e5e"),
-                            Description = "Delete",
-                            Name = "DeleteOrder",
-                            UpdateDate = new DateTime(2023, 10, 13, 13, 1, 22, 300, DateTimeKind.Utc).AddTicks(3647)
+                            Id = new Guid("b31f1b31-c404-4e12-9776-d72603a0d32c"),
+                            Description = "Report",
+                            Name = "Report",
+                            UpdateDate = new DateTime(2023, 12, 11, 10, 3, 0, 282, DateTimeKind.Utc).AddTicks(2072)
                         });
                 });
 

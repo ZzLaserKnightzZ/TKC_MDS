@@ -7,7 +7,7 @@ namespace TKC_MDS.Data
     {
         public static void Seed(this ModelBuilder builder)
         {
-
+			/*
 			#region saveOrder_roles
 			var saveOrder_roles = new List<SaveOrderRoles> {
                 new SaveOrderRoles{Name="ViewOrder", Description="View"},
@@ -44,6 +44,18 @@ namespace TKC_MDS.Data
 			};
 			builder.Entity<ReportRoles>().HasData(report_roles);
 			#endregion
+			*/
+
+			#region MDS_Roles
+			var mds_roles = new List<MDS_Roles> {
+				new MDS_Roles{Name="SaveOrder",Description = "Save Order page"},
+				new MDS_Roles{Name="AdjustOrder",Description="Adjust Order Page"},
+				new MDS_Roles{Name="DataType",Description = "DataType  Page"},
+				new MDS_Roles{Name="Report",Description="Report  Page"},
+			};
+			builder.Entity<MDS_Roles>().HasData(mds_roles);
+			#endregion
+
 			#region manageUser_roles
 			var manageUser_roles = new List<ManageUserRoles> {
 				new ManageUserRoles{Name="ViewUser", Description = "View"},

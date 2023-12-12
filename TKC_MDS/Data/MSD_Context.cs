@@ -12,12 +12,15 @@ namespace TKC_MDS.Data
 
         }
 		#region role
+		/*
 		public DbSet<SaveOrderRoles> SaveOrderRoles { get; set; }
 		public DbSet<AdjustOrderRoles> AdjustOrderRoles { get; set; }
 		public DbSet<DataTypeRoles> DataTypeRoles { get; set; }
 		public DbSet<ReportRoles> ReportRoles { get; set; }
+        */
+		public DbSet<MDS_Roles> MDS_Roles { get; set; }
 		public DbSet<ManageUserRoles> ManageUserRoles { get; set; }
-
+        
 		public DbSet<ClaimRole> ClaimRoles { get; set; }
 		#endregion
 

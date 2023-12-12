@@ -1,10 +1,13 @@
 ﻿@{
 	ViewData["Title"] = "RoleList";
 	var roleList = (List<ListRoles>)ViewData["ListRole"]!;
+	/*
 	var save_order = (List<SaveOrderRoles>)ViewData["SaveOrder"]!;
 	var adj_order = (List<AdjustOrderRoles>)ViewData["AdjustOrder"]!;
 	var datatype = (List<DataTypeRoles>)ViewData["DataTypeRole"]!;
 	var report = (List<ReportRoles>)ViewData["ReportRole"]!;
+	*/
+	var page_role = (List<MDS_Roles>)ViewData["MDS_Role"]!;
 	var manage_user = (List<ManageUserRoles>)ViewData["ManageUser"]!;
 }
 <!--begin::Toolbar-->
@@ -53,79 +56,29 @@
 							<div class="d-flex flex-column text-gray-600">
 								<div class="d-flex align-items-center flex-wrap  py-2">
 										@{
+											/*
 											var SaveOrder = role.claimRole.Take(4);
 											var AdjOrder = role.claimRole.Skip(4).Take(4);
 											var DataTypeOrder = role.claimRole.Skip(8).Take(4);
 											var ReportOrder = role.claimRole.Skip(12).Take(4);
-											var manageUserOrder = role.claimRole.Skip(16).Take(4);
+											*/
+											var access_page = role.claimRole.Take(4);
+											var manageUserOrder = role.claimRole.Skip(4).Take(4);
 										}
 
-										@if (SaveOrder.Where(x => x.IsAllow == true).Count() > 0)
-										{
-											@*<span class="bullet bg-primary me-3"></span>*@
 
-										<p style="width:100%;">
-											<span style="color:blue;">บันทึก Order :</span>   <br />
-											@foreach (var save in SaveOrder)
-												{
-													@if (save.IsAllow)
-													{
-													
-													@save.Name@(", ")
-												}
-												}
-										</p>
-							
-										}
-									
-									@if (AdjOrder.Where(x => x.IsAllow == true).Count() > 0)
+									@if (access_page.Where(x => x.IsAllow == true).Count() > 0)
 										{
 										@*<span class="bullet bg-primary me-3"></span>*@
 
 										<p style="width:100%;">
 											<span style="color:blue;">
-												ปรับ Order :</span>  <br />@foreach (var adj in AdjOrder)
+												Access Page  :
+											</span>  <br />@foreach (var acc_page in access_page)
 												{
-												@if (adj.IsAllow)
+												@if (acc_page.IsAllow)
 													{
-													@adj.Name
-
-													@(", ")
-													}
-												}
-										</p>
-									
-										}
-
-									@if (DataTypeOrder.Where(x => x.IsAllow == true).Count() > 0)
-										{
-										@*<span class="bullet bg-primary me-3"></span>*@
-
-										<p style="width:100%;">
-											<span style="color:blue;">
-												รูปแบบข้อมูล  :</span>  <br />@foreach (var DataType in DataTypeOrder)
-												{
-												@if (DataType.IsAllow)
-													{
-													@DataType.Name
-
-													@(", ")
-													}
-												}
-										</p>
-										
-										}
-									@if (ReportOrder.Where(x => x.IsAllow == true).Count() > 0)
-										{
-										@*<span class="bullet bg-primary me-3"></span>*@
-
-										<p style="width:100%;">
-											<span style="color:blue;">
-												พิมพ์รายงาน  :</span>  <br />@foreach (var Report in ReportOrder)
-												{
-												@if (Report.IsAllow)
-													{
-													@Report.Name
+													@acc_page.Name
 
 													@(", ")
 													}
@@ -384,203 +337,28 @@
 													<!--begin::Table row-->
 													<tr>
 														<!--begin::Label-->
-														<td class="text-gray-800">บันทึก Order</td>
+														<td class="text-gray-800">การเข้าถึงหน้า</td>
 														<!--end::Label-->
 														<!--begin::Options-->
 														<td>
 															<!--begin::Wrapper-->
 															<div class="d-flex">
-																<!--begin::Checkbox-->
 															@{
 																int i = 0;
 															}
-
-															@foreach (var order in  save_order.OrderBy(x => x.Name))
+															@foreach (var page_r in page_role)
 															{
 																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input type="hidden" name="Assign[@i][AccessRolesId]" value="@order.Id">
-																	<input type="hidden" name="Assign[@i][RoleName]" value="@order.Name">
-																	<input type="hidden" name="Assign[@i][Name]" value="@order.Description">
+																	<input type="hidden" name="Assign[@i][AccessRolesId]" value="@page_r.Id">
+																	<input type="hidden" name="Assign[@i][RoleName]" value="@page_r.Name">
+																	<input type="hidden" name="Assign[@i][Name]" value="@page_r.Description">
 																	<input class="form-check-input" type="checkbox" name="Assign[@i][IsAllow]" onclick="chkBoxClick(this)">
-																	<span class="form-check-label">@order.Description</span>
+																	<span class="form-check-label">@page_r.Description</span>
 																	@{
 																		i++;
 																	}
 																</label>
 															}
-															@*
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">View</span>
-																</label>
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">Create</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_write">
-																	<span class="form-check-label">Edit</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_create">
-																	<span class="form-check-label">Delete</span>
-																</label>*@
-																<!--end::Checkbox-->
-
-															</div>
-															<!--end::Wrapper-->
-														</td>
-														<!--end::Options-->
-													</tr>
-													<tr>
-														<!--begin::Label-->
-														<td class="text-gray-800">ปรับ Order</td>
-														<!--end::Label-->
-														<!--begin::Options-->
-														<td>
-															<!--begin::Wrapper-->
-															<div class="d-flex">
-																<!--begin::Checkbox-->
-															@foreach (var order in adj_order.OrderBy(x => x.Name))
-															{
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input type="hidden" name="Assign[@i][AccessRolesId]" value="@order.Id">
-																	<input type="hidden" name="Assign[@i][RoleName]" value="@order.Name">
-																	<input type="hidden" name="Assign[@i][Name]" value="@order.Description">
-																	<input class="form-check-input" type="checkbox" name="Assign[@i][IsAllow]" onclick="chkBoxClick(this)">
-																	<span class="form-check-label">@order.Description</span>
-																	@{
-																		i++;
-																	}
-																</label>
-															}
-																@*
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">View</span>
-																</label>
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">Create</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_write">
-																	<span class="form-check-label">Edit</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_create">
-																	<span class="form-check-label">Delete</span>
-																</label>*@
-																<!--end::Checkbox-->
-
-															</div>
-															<!--end::Wrapper-->
-														</td>
-														<!--end::Options-->
-													</tr>
-													<tr>
-														<!--begin::Label-->
-														<td class="text-gray-800">รูปแบบข้อมูล</td>
-														<!--end::Label-->
-														<!--begin::Options-->
-														<td>
-															<!--begin::Wrapper-->
-															<div class="d-flex">
-																<!--begin::Checkbox-->
-															@foreach (var order in datatype.OrderBy(x => x.Name))
-															{
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input type="hidden" name="Assign[@i][AccessRolesId]" value="@order.Id">
-																	<input type="hidden" name="Assign[@i][RoleName]" value="@order.Name">
-																	<input type="hidden" name="Assign[@i][Name]" value="@order.Description">
-																	<input class="form-check-input" type="checkbox" name="Assign[@i][IsAllow]" onclick="chkBoxClick(this)">
-																	<span class="form-check-label">@order.Description</span>
-																	@{
-																		i++;
-																	}
-																</label>
-															}
-																@*
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">View</span>
-																</label>
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">Create</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_write">
-																	<span class="form-check-label">Edit</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_create">
-																	<span class="form-check-label">Delete</span>
-																</label>*@
-																<!--end::Checkbox-->
-
-															</div>
-															<!--end::Wrapper-->
-														</td>
-														<!--end::Options-->
-													</tr>
-													<tr>
-														<!--begin::Label-->
-														<td class="text-gray-800">พิมพ์รายงาน</td>
-														<!--end::Label-->
-														<!--begin::Options-->
-														<td>
-															<!--begin::Wrapper-->
-															<div class="d-flex">
-															@foreach (var order in report.OrderBy(x => x.Name))
-															{
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input type="hidden" name="Assign[@i][AccessRolesId]" value="@order.Id">
-																	<input type="hidden" name="Assign[@i][RoleName]" value="@order.Name">
-																	<input type="hidden" name="Assign[@i][Name]" value="@order.Description">
-																	<input class="form-check-input" type="checkbox" name="Assign[@i][IsAllow]" onclick="chkBoxClick(this)">
-																	<span class="form-check-label">@order.Description</span>
-																	@{
-																		i++;
-																	}
-																</label>
-															}
-																<!--begin::Checkbox-->
-																@*
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">View</span>
-																</label>
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">Create</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_write">
-																	<span class="form-check-label">Edit</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_create">
-																	<span class="form-check-label">Delete</span>
-																</label>*@
-																<!--end::Checkbox-->
-
 															</div>
 															<!--end::Wrapper-->
 														</td>
@@ -611,27 +389,7 @@
 																	}
 																</label>
 															}
-																@*
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">View</span>
-																</label>
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_read">
-																	<span class="form-check-label">Create</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_write">
-																	<span class="form-check-label">Edit</span>
-																</label>
-																<!--end::Checkbox-->
-																<!--begin::Checkbox-->
-																<label class="form-check form-check-sm form-check-custom form-check-solid">
-																	<input class="form-check-input" type="checkbox" value="" name="user_management_create">
-																	<span class="form-check-label">Delete</span>
-																</label>*@
+
 																<!--end::Checkbox-->
 															</div>
 															<!--end::Wrapper-->
@@ -982,6 +740,7 @@
 		const UpdateRoles = (roleId)=>{
 
 		fetch("/role/JsonEditRole?roleId=" + roleId, { method: "post" }).then(res => res.json()).then(data => {
+			console.log(data);
 			document.getElementById("update_role_name").value = data?.roleName;
 			document.getElementById("update_roleId").value = data?.roleId;
 			let form_index = 0;

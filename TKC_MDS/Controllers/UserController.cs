@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -21,6 +22,7 @@ namespace TKC_MDS.Controllers
             _signInManager = signIn;
         }
 
+        [Authorize(Roles = ConstanceRoles.ViewUser)]
         public async Task<IActionResult> Index()
         {
             var listRole = await _role.Roles.ToListAsync();
@@ -61,9 +63,9 @@ namespace TKC_MDS.Controllers
 							}
 						}
 					}
-					await _signInManager.SignInWithClaimsAsync(user, true, claims);
+					await _signInManager.SignInWithClaimsAsync(user, false, claims);
                     //redirect
-                    return Redirect("/order/SaveOrder");
+                    return Redirect("/home/index");
 				}
 				ViewData["Error"] = "รหัสผ่านไม่ถูกต้อง";
 				return View();
@@ -72,7 +74,14 @@ namespace TKC_MDS.Controllers
             return View();
         }
 
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("login");
+        }
+
         [HttpPost]
+        [Authorize(Roles = ConstanceRoles.CreateUser)]
         public async Task<IActionResult> AddUser([FromForm]AddUser input)
         {
             if (ModelState.IsValid)
@@ -83,7 +92,13 @@ namespace TKC_MDS.Controllers
 					Email = input?.Email,
 					UserName = input?.UserName,
 				};
-                var create_user = await _user.CreateAsync(newUser,input.Password);
+
+                var have_user = await _user.FindByEmailAsync(newUser.Email);
+                if(have_user != null) return Json(new { error = "มี email นี้แล้ว" });
+				var have_name = await _user.FindByNameAsync(newUser.UserName);
+				if (have_name != null) return Json(new { error = "มี user name นี้แล้ว" });
+
+				var create_user = await _user.CreateAsync(newUser,input.Password);
                 if (create_user.Succeeded) {
                     var user = await _user.FindByEmailAsync(input.Email);
                     var resault = await _user.AddToRoleAsync(user,input.Role);
@@ -91,9 +106,9 @@ namespace TKC_MDS.Controllers
                     {
                         return Json(new { msg = "สร้าง user ไหม่เรียบร้อย" });
                     }
-					return Json(new { error = "เกิดข้อผิดพลาด" });
+					return Json(new { error = "เกิดข้อผิดพลาด add roleไม่สำเร็จ" });
                 }
-                return Json(new {error="เกิดข้อผิดพลาด"});
+                return Json(new {error="เกิดข้อผิดพลาด สร้าง user ไม่สำเร็จ"});
 			}
             else
             {
@@ -101,7 +116,8 @@ namespace TKC_MDS.Controllers
             }
         }
         
-        [HttpDelete]
+        [HttpPost]
+        [Authorize(Roles = ConstanceRoles.DeleteUser)]
         public async Task<IActionResult> DeleteUser(string id)
         {
            var user = await _user.FindByIdAsync(id);
@@ -136,12 +152,30 @@ namespace TKC_MDS.Controllers
             return Json(users);
 		}
         [HttpPost]
+        [Authorize(Roles =ConstanceRoles.EditUser)]
         public async Task<IActionResult> EditUser([FromForm] EditUser input)
         {
 
                 var user = await _user.FindByIdAsync(input.UserId);
                 if (user != null)
                 {
+                    if (string.IsNullOrEmpty(input.OldRole)) //empty role
+                    {
+					user.Address = input.Address;
+					user.Email = input.Email;
+					user.UserName = input.UserName;
+					var resault = await _user.AddToRoleAsync(user, input.NewRole);
+					if (resault.Succeeded)
+					{
+						if (!string.IsNullOrEmpty(input.Password))
+						{
+							await _user.RemovePasswordAsync(user);
+							await _user.AddPasswordAsync(user, input.Password);
+						}
+						await _user.UpdateAsync(user);
+						return Json(new { msg = "บันทึกข้อมูลเรียบร้อย" });
+					}
+				}
 
                     var reomve_role = await _user.RemoveFromRoleAsync(user, input.OldRole);
                     if (reomve_role.Succeeded)

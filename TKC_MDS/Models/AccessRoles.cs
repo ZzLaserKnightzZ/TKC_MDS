@@ -2,6 +2,7 @@
 
 namespace TKC_MDS.Models
 {
+	/*
 	public class SaveOrderRoles
 	{
 		
@@ -28,6 +29,14 @@ namespace TKC_MDS.Models
 	}
 
 	public class ReportRoles
+	{
+		public Guid Id { get; set; } = Guid.NewGuid();
+		public string Name { get; set; }
+		public string? Description { get; set; }
+		public DateTime UpdateDate { get; set; } = DateTime.UtcNow;
+	}
+	*/
+	public class MDS_Roles
 	{
 		public Guid Id { get; set; } = Guid.NewGuid();
 		public string Name { get; set; }

@@ -6,6 +6,7 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Font;
 using iText.Layout.Properties;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +25,13 @@ using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Channels;
 using TKC_MDS.Data;
-using TKC_MDS.Migrations;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
 using TKC_MDS.ReportModel;
 
 namespace TKC_MDS.Controllers
 {
+	[Authorize]
 	public class OrderController : Controller
 	{
 		private readonly ILogger<OrderController> _logger;
@@ -42,21 +43,22 @@ namespace TKC_MDS.Controllers
 			_dapperContext = dapper_Context;
 			_env = env;
 		}
+		[Authorize(Roles =ConstanceRoles.DataType)]
 		public IActionResult DataType()
 		{
 			return View();
 		}
-
+		[Authorize(Roles =ConstanceRoles.SaveOrder)]
 		public IActionResult SaveOrder()
 		{
 			return View();
 		}
-
+		[Authorize(Roles = ConstanceRoles.AdjustOrder)]
 		public IActionResult AdjustOrder()
 		{
 			return View();
 		}
-
+		[Authorize(Roles = ConstanceRoles.Report)]
 		public IActionResult Report()
 		{
 			return View();
@@ -366,7 +368,10 @@ namespace TKC_MDS.Controllers
 
 					if (input.Count == 0) return Json(new { error = "ไม่มีข้อมูลที่ต้องบันทึก" });
 					var updated = 0;
-					foreach (var part in input.OrderByDescending(x => x.DueDate)) //protect date 00/00/0000
+					var error = "";
+					var error_count = 0;
+
+                    foreach (var part in input.OrderByDescending(x => x.DueDate)) //protect date 00/00/0000
 					{
 						try
 						{
@@ -389,14 +394,24 @@ namespace TKC_MDS.Controllers
 							var current_date = DateTime.Now;
 							var importDate = new DateTime((current_date.Year <= 2500 ? current_date.Year : current_date.Year - 543), DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
 							part.ImportDate = $"{importDate.Year}-{importDate.Month}-{importDate.Day} {importDate.Hour}:{importDate.Minute}:{importDate.Second}";
-							updated += await _dapperContext.Insert<T_SchOrdersPart>("INSERT INTO T_SchOrdersPart (CustID,OrdersNo,PONo,PlantCode,DueDate,Period,DueTime,PartNo,Qty,SentQty,Flag01,Flag02,Flag03,Flag04,Flag05,DataType,Status,ImportBy,ImportDate,FirmOrder,Exported,InvcNo,DataFileName,Flag06,Flag07,Flag08,Flag09,Flag10,PackageCD) VALUES (@CustID,@OrdersNo,@PONo,@PlantCode,@DueDate,@Period,@DueTime,@PartNo,@Qty,@SentQty,@Flag01,@Flag02,@Flag03,@Flag04,@Flag05,@DataType,@Status,@ImportBy,@ImportDate,@FirmOrder,@Exported,@InvcNo,@DataFileName,@Flag06,@Flag07,@Flag08,@Flag09,@Flag10,@PackageCD)", part);
+                            //default
+                            part.Status = part.Status != null ? part.Status:false;
+							part.ImportBy = User?.Identity?.Name != null ? User?.Identity?.Name : "";
+							part.FirmOrder = part.FirmOrder != null ? part.FirmOrder :false;
+							part.Exported = part.Exported != null ? part.Exported : false;
+							part.InvcNo = part.InvcNo != null ? part.InvcNo : "";
+							part.PackageCD = part.PackageCD != null ? part.PackageCD : "";
+                            //end default
+                            updated += await _dapperContext.Insert<T_SchOrdersPart>("INSERT INTO T_SchOrdersPart (CustID,OrdersNo,PONo,PlantCode,DueDate,Period,DueTime,PartNo,Qty,SentQty,Flag01,Flag02,Flag03,Flag04,Flag05,DataType,Status,ImportBy,ImportDate,FirmOrder,Exported,InvcNo,DataFileName,Flag06,Flag07,Flag08,Flag09,Flag10,PackageCD) VALUES (@CustID,@OrdersNo,@PONo,@PlantCode,@DueDate,@Period,@DueTime,@PartNo,@Qty,@SentQty,@Flag01,@Flag02,@Flag03,@Flag04,@Flag05,@DataType,@Status,@ImportBy,@ImportDate,@FirmOrder,@Exported,@InvcNo,@DataFileName,@Flag06,@Flag07,@Flag08,@Flag09,@Flag10,@PackageCD)", part);
 						}
 						catch (Exception ex)
 						{
 							//error datetime
-						}
+							error += ex.Message;
+							error_count++;
+                        }
 					}
-					return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ" });
+					return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ ผิดพลาด "+error_count+" รายการ error => " +error });
 				}
 				else
 				{

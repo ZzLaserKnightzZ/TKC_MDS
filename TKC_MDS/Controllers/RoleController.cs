@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.InteropServices;
@@ -10,6 +11,7 @@ using TKC_MDS.Models.DTO;
 
 namespace TKC_MDS.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class RoleController : Controller
     {
         private readonly MSD_Context _db;
@@ -23,12 +25,14 @@ namespace TKC_MDS.Controllers
         {
             var Rols = await _db.Roles.AsNoTracking().ToListAsync();
             var ClaimRole = await _db.ClaimRoles.AsNoTracking().ToListAsync();
-            
+			/*
             var SaveOrder = await _db.SaveOrderRoles.AsNoTracking().ToListAsync();
             var AdjustOrder = await _db.AdjustOrderRoles.AsNoTracking().ToListAsync();
             var DataTypeRole = await _db.DataTypeRoles.AsNoTracking().ToListAsync();
             var ReportRole = await _db.ReportRoles.AsNoTracking().ToListAsync();
-            var ManageUser = await _db.ManageUserRoles.AsNoTracking().ToListAsync();
+            */
+			var mds_role = await _db.MDS_Roles.AsNoTracking().ToListAsync();
+			var ManageUser = await _db.ManageUserRoles.AsNoTracking().ToListAsync();
             
             var listRoles = new List<ListRoles>();
             foreach (var role in Rols)
@@ -43,11 +47,13 @@ namespace TKC_MDS.Controllers
 			}
 
             ViewData["ListRole"] = listRoles;
-
+			/*
             ViewData["SaveOrder"] = SaveOrder;
 			ViewData["AdjustOrder"] = AdjustOrder;
 			ViewData["DataTypeRole"] = DataTypeRole;
 			ViewData["ReportRole"] = ReportRole;
+            */
+			ViewData["MDS_Role"]= mds_role;
 			ViewData["ManageUser"] = ManageUser;
 
 			return View();
@@ -80,7 +86,9 @@ namespace TKC_MDS.Controllers
            var role =  await _role.FindByIdAsync(roleId);
             if(role != null)
             {
-                await _role.DeleteAsync(role);
+                if(role.Name.ToLower() == "admin") return Json(new { error = "ลบ role นี้ไม่ได้" });
+
+				await _role.DeleteAsync(role);
                 var roles =  _db.ClaimRoles.Where(r => r.RoleId.Equals(Guid.Parse(role.Id)));
                 _db.ClaimRoles.RemoveRange(roles);
                 await _db.SaveChangesAsync();
@@ -97,17 +105,17 @@ namespace TKC_MDS.Controllers
             if(role != null)
             {
                 var claim = await _db.ClaimRoles.AsNoTracking().Where(c => c.RoleId.Equals(Guid.Parse(role.Id))).ToListAsync();
-				var SaveOrder = claim.Take(4).ToList();
-				var AdjOrder = claim.Skip(4).Take(4).ToList(); 
-				var DataTypeOrder = claim.Skip(8).Take(4).ToList();
-				var ReportOrder = claim.Skip(12).Take(4).ToList();
-				var manageUserOrder = claim.Skip(16).Take(4).ToList();
+				var access_page = claim.Take(4).ToList();
+				var manageUserOrder = claim.Skip(4).Take(4).ToList();
                 var listRole = new List<JsonType>()
                 {
+                    /*
                     new JsonType{ name= "บันทึก Order :",assign=SaveOrder},
 					new JsonType{ name= "ปรับ Order :",assign=AdjOrder},
 					new JsonType{ name= "รูปแบบข้อมูล :",assign=DataTypeOrder},
 					new JsonType{ name= "พิมพ์รายงาน :",assign=ReportOrder},
+                    */
+                    new JsonType{ name= "access_page :",assign=access_page},
 					new JsonType{ name= "User Management :",assign=manageUserOrder}
 				};
                 return Json(new { roleId = role.Id, roleName = role.Name, list = listRole });

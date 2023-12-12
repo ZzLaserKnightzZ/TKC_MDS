@@ -2,68 +2,20 @@
 @{
     Layout = "";
 }
-<style>
-   *{
-       margin:0;
-       padding:0;
-    }
-    .login-container{
-       width:100%;
-       min-height:100vh;
-       min-height:100dvh;
-       box-sizing:border-box;
+<link href="~/css/login.css" rel="stylesheet" />
 
-       display:flex;
-       flex-direction:column;
-       justify-content:center;
-       align-items:center; 
-    }
-    .box{
-        position:relative;
-        padding:1rem;
-        box-sizing:border-box;
-        background-color: white !important;
-        border-radius:10px;
-        width:20%;
-        height:50%;
-        max-width:450px;
-        min-width:370px;
-        box-shadow: 0 0 5px gray;
-        display:grid;
-        grid-template-rows:3rem auto 2rem 3rem 2rem 3rem 2rem auto 3rem;
-        & > h3{
-            display:flex;
-            flex-direction:column;
-           justify-content:center;
-            text-align:center;
-        }
 
-        & > *{
-            padding:3px;
-            font-size: 1.5rem;
-        }
-
-        & > input {
-            border: 1px solid black;
-        }
-
-        & > input:focus{
-           border:5px solid black;
-        }
-    }
-
-</style>
-
-<div class="login-container">
-    <form action="/user/login" method="post" class="box">
-        <h3>Login</h3>
+<div class="login-contaner">
+    <form action="/user/login" method="post" class="login-box">
+        <div></div>
+        <h2>Login TKC MDS</h2>
         <div></div>
         <label>User Name</label>
-        <input type="text" name="user_name">
+        <input type="text" name="user_name" placeholder="email@example.com" />
         <label>Password</label>
-        <input type="password" name="password">
-        <label style="color:red;">@ViewData["Error"] </label>
-        <div></div>
+        <input type="password" name="password" placeholder="passsword" />
+        <div>@ViewData["Error"]</div>
         <button type="submit">Login</button>
-      </form>
+        <div></div>
+    </form>
 </div>

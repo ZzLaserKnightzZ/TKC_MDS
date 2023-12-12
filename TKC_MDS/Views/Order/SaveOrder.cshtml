@@ -2,8 +2,9 @@
 	ViewData["Title"] = "Order";
 }
 
+
 <div class="row"> 
-<div class="col-xl-2  "></div>
+	<div class="col-xl-2  "></div>
 
 <!--begin::Col-->
 <div class="col-xl-8  ">
@@ -24,13 +25,14 @@
 		<div class="card-body table-responsive">
 			<!--begin::Table-->
 			<form id="form" onsubmit="return false">
+
 			<table class="table align-middle fs-6 gy-3  " @*id="kt_table_widget_5_table"*@>
 				<!--begin::Table head-->
 				<!--begin::Table row-->
 				<tbody>
 					<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 						<th class="text-end  text-gray-400 pe-3 min-w-100px">
-							ลูกค้า :
+									ลูกค้า :					
 						</th>
 						<td class="text-end pe-3 min-w-50px">
 									<select class="form-select form-select-sm form-select-solid w-200px" name="CusTumerId" id="select_custumer" onchange="selectedDataType()">
@@ -183,7 +185,7 @@
 						for (let index = 0; index < line_text.length; index++){ //แยกข้อมูลจากแถว
 							//row[index] = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start, col.start+col.size));
 							if (DATATYPE_CUST?.rowManyDue) { //หนึ่งแถวข้อมูลมีหลายDue :
-								let another_filed = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start, col.start + col.size));
+								let another_filed = FILLTER_COLUMN_BY_TYPE.map(col => line_text[index].substring(col.start -1 , (col.start + col.size) -1 ));
 								//console.log("type",FILLTER_COLUMN_BY_TYPE);
 								const dueDate = FILLTER_COLUMN_BY_TYPE.find(type => type.field.startsWith("DueDate"));
 								const qty = FILLTER_COLUMN_BY_TYPE.find(type => type.field.startsWith("Qty"));
@@ -372,13 +374,13 @@
 						*/
 
 					}
-				}else{
+				}else{//แบบมีตัวขั้น
 					if (line_text.length > 0) {
-						const header = line_text[0].split(SEPERATER);
+						//const header = line_text[0].split(SEPERATER);
 						const row = [];
 
 
-						for (let index = 1; index < line_text.length - 1; index++) {  //แยกข้อมูลจากแถว
+						for (let index = 0; index < line_text.length - 1; index++) {  //แยกข้อมูลจากแถว
 								const rows = line_text[index].split(SEPERATER);
 							row.push(FILLTER_COLUMN_BY_TYPE.map(col => rows[col.start] ? rows[col.start] : ""));
 						}
@@ -485,7 +487,7 @@
 						icon: 'success',
 						title: data.msg,
 						showConfirmButton: false,
-						timer: 1500
+						timer: 15000
 					}).then(resault => {
 						window.location.href = "/order/SaveOrder";
 					});
