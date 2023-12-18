@@ -3,6 +3,8 @@
 	ViewData["Title"] = "UserList";
 	var listRole =	(List<Roles>)ViewData["listRole"]!;
 	var listUser = 	(IList<ListUser>)ViewData["listUser"]!;
+
+	var claim = User.Claims.ToList();
 }
 <!--begin::Toolbar-->
 	<div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6Add User">
@@ -49,12 +51,14 @@
 						<!--begin::Toolbar-->
 						<div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
 
-
+						@if (claim.Where(x => x.Value == ConstanceRoles.CreateUser).Count() > 0)
+						{
 							<!--begin::Add user-->
-						<button type="button" class="btn btn-primary" onclick="dialogAddUser()" @*data-bs-toggle="modal" data-bs-target="#kt_modal_add_user"*@>
+							<button type="button" class="btn btn-primary" onclick="dialogAddUser()" @*data-bs-toggle="modal" data-bs-target="#kt_modal_add_user"*@>
 								<i class="ki-duotone ki-plus fs-2"></i>Add User
 							</button>
-							<!--end::Add user-->
+						}
+						<!--end::Add user-->
 						</div>
 						<!--end::Toolbar-->
 						<!--begin::Group actions-->
@@ -594,8 +598,14 @@
 								</td>
 
 								<td class="text-end">
-									<button class="btn btn-warning" onclick="dialogEditUser('@usr.Id')">แก้ไข</button>
-									<button class="btn btn-danger" onclick="deleteUser('@usr.Id')">ลบ</button>
+									@if (claim.Where(x => x.Value == ConstanceRoles.EditUser).Count() > 0)
+									{
+										<button class="btn btn-warning" onclick="dialogEditUser('@usr.Id')">แก้ไข</button>
+									}
+									@if (claim.Where(x => x.Value == ConstanceRoles.DeleteUser).Count() > 0)
+									{
+										<button class="btn btn-danger" onclick="deleteUser('@usr.Id')">ลบ</button>
+									}
 								</td>
 							</tr>
 						}
@@ -618,7 +628,8 @@
 					search_body.style.display = "";
 					listUser.style.display = "none";
 					fetch("/user/JsonSearchUser?userName="+value,{method:"get"}).then(res=> res.json()).then(data =>{
-						//console.log(data);
+
+
 				let html = data.reduce((prev, curr) => prev += `							
 							<tr>
 									<td class="d-flex align-items-center">
@@ -630,12 +641,12 @@
 										</div>
 									</td>
 									<td>
-												${curr?.roles?.reduce((prevRole, currRole) => prevRole += "," + currRole, "").slice(1)}
+													${curr?.roles?.reduce((prevRole, currRole) => prevRole += "," + currRole, ``).slice(1)}
 									</td>
 
 									<td class="text-end">
-										<button class="btn btn-warning" onclick="dialogEditUser('${curr?.id}')">แก้ไข</button>
-											<button class="btn btn-danger" onclick="deleteUser('${curr?.id}')">ลบ</button>
+													<button class="btn btn-warning" onclick="dialogEditUser('${curr?.id}')">แก้ไข</button>
+													<button class="btn btn-danger" onclick="deleteUser('${curr?.id}')">ลบ</button>
 									</td>
 								</tr>`, "");
 								search_body.innerHTML = html;

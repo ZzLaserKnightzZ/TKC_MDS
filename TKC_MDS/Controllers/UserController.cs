@@ -123,6 +123,7 @@ namespace TKC_MDS.Controllers
            var user = await _user.FindByIdAsync(id);
             if (user != null)
             {
+
                 await _user.DeleteAsync(user);
                 return Json(new {msg="ลบข้อมูลเรียบร้อย"});
             }

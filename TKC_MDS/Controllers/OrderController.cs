@@ -260,6 +260,8 @@ namespace TKC_MDS.Controllers
 			//{
 			try
 			{
+
+
 				var model = new T_SchDataType_Cust
 				{
 					CustID = input.CustID,
@@ -290,6 +292,13 @@ namespace TKC_MDS.Controllers
 					ff.FieldId = i;
 					i++;
 				}
+				//end sort
+
+				//get FormType name
+				var select_dataType = $"SELECT * FROM T_SchDataType_MS WHERE TypeCode='{input.TypeCode}'";
+				var dataTypes = await _dapperContext.QueryTableAsync<T_SchDataType_MS>(select_dataType);
+				var dataType = dataTypes.FirstOrDefault();
+				//end get FormType name
 
 				foreach (var form in f)
 				{
@@ -310,6 +319,7 @@ namespace TKC_MDS.Controllers
 							StartPosition = form.StartPosition,
 							FieldName = form.Name,
 							FieldId = Convert.ToByte(form.FieldId),
+							FormType = dataType?.TypeName,
 							UpdatedDate = $"{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day} {DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}"
 						};
 						await _dapperContext.Insert<T_SchFormConv>("INSERT INTO T_SchFormConv (CustId,DataType,RowManyDue,FieldId,FieldName,StartPosition,DataSize,Separater,FormType,Remark,TypeCode,UpdatedBy,UpdatedDate) VALUES (@CustId,@DataType,@RowManyDue,@FieldId,@FieldName,@StartPosition,@DataSize,@Separater,@FormType,@Remark,@TypeCode,@UpdatedBy,@UpdatedDate)", conv_model);
@@ -430,7 +440,23 @@ namespace TKC_MDS.Controllers
 		public async Task<IActionResult> JsonAdjOrder(string? custId, string? dataTypeId)
 		{
 			var date = DateTime.Now;
-			return Json(await _dapperContext.QueryTableAsync<T_SchOrdersPart>($"SELECT * FROM T_SchOrdersPart WHERE CustID={custId} AND DataType={dataTypeId} AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 100"));
+			var orders = await _dapperContext.QueryTableAsync<T_SchOrdersPart>($"SELECT * FROM T_SchOrdersPart WHERE CustID={custId} AND DataType={dataTypeId} AND DATEDIFF(day, T_SchOrdersPart.DueDate,'{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}') <= 100");
+			if (orders != null)
+			{
+				var orderList = orders.ToList();
+				//convert date mm/dd/yyyy to dd/mm/yyyy
+				orderList.ForEach(or =>
+				{
+					or.DueDate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(or.DueDate);
+				}); 
+
+				return Json(orderList);
+			}
+			else
+			{
+				return NoContent();
+			}
+			
 		}
 
 		[HttpPost]
@@ -463,7 +489,8 @@ namespace TKC_MDS.Controllers
 						try
 						{
 							var culture = new CultureInfo("en-US");
-							var date = DateTime.Parse(dueDate.FromDate, culture);
+							var newDate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(dueDate.FromDate); //convert date dd/mm/yyyy to mm/dd/yyyy
+							var date = DateTime.Parse(newDate, culture);
 							order += await _dapperContext.Update($"UPDATE T_SchOrdersPart SET Qty=0 WHERE CustID='{cancel.CustID}' AND DataType ='{cancel.DataType}'{(!string.IsNullOrEmpty(cancel.OrdersNo) ? $" AND OrdersNo='{cancel.OrdersNo}'" : "")}{(!string.IsNullOrEmpty(cancel.PONo) ? $" AND PONo='{cancel.PONo}'" : "")}{(!string.IsNullOrEmpty(strMultiPart) ? strMultiPart : "")} AND DueDate='{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second}'", new { });
 						}
 						catch (Exception ex)
@@ -491,17 +518,18 @@ namespace TKC_MDS.Controllers
 			try
 			{
 				var culture = new CultureInfo("en-US");
-				var dateTime = DateTime.Parse(date, culture);// mm/dd/yyyy
+				var newDate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(date); //convert date dd/mm/yyyy to mm/dd/yyyy
+				var dateTime = DateTime.Parse(newDate, culture);// mm/dd/yyyy
 				if (todo == "out")
 				{
 					var added = dateTime.AddDays(1);
-					var resDate = $"{added.Month}/{added.Day}/{added.Year} {added.Hour}:{added.Minute}:{added.Second}";
+					var resDate = $"{added.Day:00}/{added.Month:00}/{ (added.Year > 2500 ? added.Year -543:added.Year)} {added.Hour:00}:{added.Minute:00}:{added.Second:00}";
 					return Json(new { date = resDate });
 				}
 				if (todo == "in")
 				{
 					var added = dateTime.AddDays(-1);
-					var resDate = $"{added.Month}/{added.Day}/{added.Year} {added.Hour}:{added.Minute}:{added.Second}";
+					var resDate = $"{added.Day:00}/{added.Month:00}/{(added.Year > 2500 ? added.Year - 543 : added.Year)} {added.Hour:00}:{added.Minute:00}:{added.Second:00}";
 					return Json(new { date = resDate });
 				}
 
@@ -543,16 +571,20 @@ namespace TKC_MDS.Controllers
 					});
 				}
 
-				foreach (var shiftDate in input.ShiftDate.OrderBy(x => x.ToDate))
+				foreach (var shiftDate in input.ShiftDate.OrderBy(x => DateTime.Parse(ConvertDate_MMDDYYYY_swap_DDMMYYYY(x.ToDate), new CultureInfo("en-US")) ))
 				{
 
 					try
 					{
 						var culture = new CultureInfo("en-US");
-						var toDate = DateTime.Parse(shiftDate.ToDate, culture);
+						var newTodate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(shiftDate.ToDate); //convert date dd/mm/yyyy to mm/dd/yyyy
+						var toDate = DateTime.Parse(newTodate, culture);
 						var strToDate = $"'{toDate.Year}-{toDate.Month:00}-{toDate.Day:00} {toDate.Hour:00}:{toDate.Minute:00}:{toDate.Second:00}'";
-						var fromDate = DateTime.Parse(shiftDate.FromDate, culture);
-						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00} : {fromDate.Minute:00} : {fromDate.Second:00}'";
+
+						var newFromDate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(shiftDate.FromDate); //convert date dd/mm/yyyy to mm/dd/yyyy
+						var fromDate = DateTime.Parse(newFromDate, culture);
+						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00}:{fromDate.Minute:00}:{fromDate.Second:00}'";
+						
 						var date = DateTime.Now;
 						var strDate = $"'{date.Year}-{date.Month:00}-{date.Day:00} {date.Hour:00}:{date.Minute:00}:{date.Second:00}'";
 
@@ -581,6 +613,8 @@ namespace TKC_MDS.Controllers
 								 */
 								var DueDateF = strFromDate.Substring(1, strFromDate.Length - 2); //remove ''
 								var DueDateT = strToDate.Substring(1, strToDate.Length - 2);  //remove ''
+								var actDate = strDate.Substring(1, strDate.Length - 2);  //remove ''
+
 								var dataType = new T_SchAdjust_Data
 								{
 									DataType = orderUpdated.DataType,
@@ -596,7 +630,7 @@ namespace TKC_MDS.Controllers
 									DueTimeT = shiftDate.ToTime,
 									PeriodF = shiftDate.FromPeriod,
 									PeriodT = shiftDate.ToPeriod,
-									ActDate = strDate,
+									ActDate = actDate,
 									PartCheck = string.IsNullOrEmpty(strMultiPart) ? false : true,
 									sUser = User?.Identity?.Name?.Length > 0 ? User.Identity.Name : ""
 								};
@@ -621,7 +655,7 @@ namespace TKC_MDS.Controllers
 						error += ex.Message;
 					}
 				}
-				return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ" });
+				return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ error => " + error});
 
 			}
 			catch (Exception ex)
@@ -653,16 +687,20 @@ namespace TKC_MDS.Controllers
 					});
 				}
 
-				foreach (var shiftDate in input.ShiftDate.OrderByDescending(x => x.ToDate))
+				foreach (var shiftDate in input.ShiftDate.OrderByDescending(x => DateTime.Parse(ConvertDate_MMDDYYYY_swap_DDMMYYYY(x.ToDate), new CultureInfo("en-US"))))
 				{
 
 					try
 					{
 						var culture = new CultureInfo("en-US");
-						var toDate = DateTime.Parse(shiftDate.ToDate, culture);
+						var newTodate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(shiftDate.ToDate); //convert date dd/mm/yyyy to mm/dd/yyyy
+						var toDate = DateTime.Parse(newTodate, culture);
 						var strToDate = $"'{toDate.Year}-{toDate.Month:00}-{toDate.Day:00} {toDate.Hour:00}:{toDate.Minute:00}:{toDate.Second:00}'";
-						var fromDate = DateTime.Parse(shiftDate.FromDate, culture);
-						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00} : {fromDate.Minute:00} : {fromDate.Second:00}'";
+
+						var newFromDate = ConvertDate_MMDDYYYY_swap_DDMMYYYY(shiftDate.FromDate); //convert date dd/mm/yyyy to mm/dd/yyyy
+						var fromDate = DateTime.Parse(newFromDate, culture);
+						var strFromDate = $"'{fromDate.Year}-{fromDate.Month:00}-{fromDate.Day:00} {fromDate.Hour:00}:{fromDate.Minute:00}:{fromDate.Second:00}'";
+
 						var date = DateTime.Now;
 						var strDate = $"'{date.Year}-{date.Month:00}-{date.Day:00} {date.Hour:00}:{date.Minute:00}:{date.Second:00}'";
 
@@ -691,6 +729,8 @@ namespace TKC_MDS.Controllers
 								 */
 								var DueDateF = strFromDate.Substring(1, strFromDate.Length - 2); //remove ''
 								var DueDateT = strToDate.Substring(1, strToDate.Length - 2);  //remove ''
+								var actDate = strDate.Substring(1, strDate.Length - 2);  //remove ''
+
 								var dataType = new T_SchAdjust_Data
 								{
 									DataType = orderUpdated.DataType,
@@ -706,7 +746,7 @@ namespace TKC_MDS.Controllers
 									DueTimeT = shiftDate.ToTime,
 									PeriodF = shiftDate.FromPeriod,
 									PeriodT = shiftDate.ToPeriod,
-									ActDate = strDate,
+									ActDate = actDate,
 									PartCheck = string.IsNullOrEmpty(strMultiPart) ? false : true,
 									sUser = User?.Identity?.Name?.Length > 0 ? User.Identity.Name : ""
 								};
@@ -731,7 +771,7 @@ namespace TKC_MDS.Controllers
 						error += ex.Message;
 					}
 				}
-				return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ" });
+				return Json(new { msg = "บันทึกข้อมูลเรียบร้อย " + updated + " รายการ error => " + error });
 
 			}
 			catch (Exception ex)
@@ -1218,5 +1258,21 @@ namespace TKC_MDS.Controllers
 				return Json(new { error = ex.Message });
 			}
 		}
+		#region same out put
+		private string ConvertDate_MMDDYYYY_swap_DDMMYYYY(string date)
+		{
+			var dueDate = date.Split(" ");
+			var onlyDate = dueDate[0].Split("/");
+			var newDateFormatt = onlyDate[1] + "/" + onlyDate[0] + "/" + onlyDate[2];
+			return newDateFormatt;
+		}
+		//private string ConvertDate_DDMMYYYY_to_MMDDYYYY(string date)
+		//{
+		//	var dueDate = date.Split(" ");
+		//	var onlyDate = dueDate[0].Split("/");
+		//	var newDateFormatt = onlyDate[1] + "/" + onlyDate[0] + "/" + onlyDate[2];
+		//	return newDateFormatt;
+		//}
+		#endregion
 	}
 }

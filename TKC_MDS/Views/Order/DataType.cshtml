@@ -472,12 +472,17 @@
 			document.getElementById("Seperator").querySelectorAll("option").forEach(option => {
 			if(option.value == ""){
 				option.selected = true;
+
 			}else{
 				option.selected = false;
 			}
 			});
-		}
-		document.querySelectorAll("#input_seperater").forEach(input => { //set none seperater
+			document.getElementById("Seperator").disabled = true; //lock seperater
+		}else{
+			document.getElementById("Seperator").disabled = false; //unlock seperater
+		} 
+
+		document.querySelectorAll("#input_seperater").forEach(input => { //set readOnly for none seperater
 			
 				input.readOnly = ! input.readOnly;
 		});
