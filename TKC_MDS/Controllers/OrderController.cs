@@ -28,6 +28,7 @@ using TKC_MDS.Data;
 using TKC_MDS.Models;
 using TKC_MDS.Models.DTO;
 using TKC_MDS.ReportModel;
+using Property = iText.Layout.Properties.Property;
 
 namespace TKC_MDS.Controllers
 {
@@ -792,17 +793,54 @@ namespace TKC_MDS.Controllers
 		public async Task<IActionResult> Report([FromForm] Report input)
 		{
 			//test custid = 4211 datatype = 01
-			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders  WHERE CustID='{input.CustId}' AND DataType='{input.DataType}'"); // WHERE CustID='{input.CustId}' AND DataType='{input.DataType}' AND nMonth='{input.ReportMount}'
+			var orders = await _dapperContext.QueryTableAsync<View_Report>($"SELECT * FROM V_MDS_By_Orders  WHERE CustID='{input.CustId}' AND DataType='{input.DataType}' AND nMonth='{input.Month}' AND nYear='{input.Year}'"); // WHERE CustID='{input.CustId}' AND DataType='{input.DataType}' AND nMonth='{input.ReportMount}'
 			if (input.DocReportType == "PDF") //pdf
 			{
 				#region hearder pdf
 				void AddCellNoBorder(iText.Layout.Element.Table t, string paragraph)
 				{
-					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5).SetBorder(Border.NO_BORDER));//.SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
+					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(4).SetBorder(Border.NO_BORDER));//.SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
 				}
 				void AddCell(iText.Layout.Element.Table t, string paragraph)
 				{
-					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
+					t.AddCell(new Cell().Add(new Paragraph(paragraph).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(4));
+				}
+
+				void PrintHeader(Document document, int pageNum)
+				{
+					//new page
+					document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+	
+					document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
+					var issueDate = DateTime.Now;
+					Paragraph p = new Paragraph($"Issue Date {issueDate.Day:00}/{issueDate.Month:00}/{issueDate.Year} Time {issueDate.Hour:00}:{issueDate.Minute:00}:{issueDate.Second:00}");
+					p.Add(new Tab());
+					p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
+					p.Add($"CUSTOMER: {input.CustId} Data Type: {input.DataType} Month:{input.Month?.Trim()} Year:{input.Year?.Trim()}");
+
+					p.Add(new Tab());
+					p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
+					p.Add("Page "+ pageNum);
+					
+					document.Add(p);
+
+					//header
+					float[] ColumnWidth = { 17f,17f,35f, 25f, 40f, 40f, 90f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 20f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f };
+					iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
+					AddCell(table, "FAC NO.");
+					AddCell(table, "Line");
+					AddCell(table, "MOD");
+					AddCell(table, "KBNo");
+					AddCell(table, "CUST PART");
+					AddCell(table, "TKC PART");
+					AddCell(table, "PART NAME");
+
+					for (var i = 1; i <= 31; i++)
+					{
+						AddCell(table, i + "");
+					}
+					AddCell(table, "TOTAL");
+					document.Add(table);
 				}
 
 				var show_path = System.IO.Path.Combine("Pdf", "test.pdf");
@@ -813,22 +851,26 @@ namespace TKC_MDS.Controllers
 				PdfDocument pdfDocument = new PdfDocument(writer);
 				Document document = new Document(pdfDocument, PageSize.A4.Rotate());
 
+				document.SetMargins(10f,10f,10f,10f);
+
 				document.Add(new Paragraph("MASTER DELIVERY SCHEDULE").SetTextAlignment(TextAlignment.CENTER));
 				var issueDate = DateTime.Now;
 				Paragraph p = new Paragraph($"Issue Date {issueDate.Day:00}/{issueDate.Month:00}/{issueDate.Year} Time {issueDate.Hour:00}:{issueDate.Minute:00}:{issueDate.Second:00}");
 				p.Add(new Tab());
 				p.AddTabStops(new TabStop(400, TabAlignment.CENTER));
-				p.Add($"CUSTOMER: {input.CustId} Data Type: {input.DataType}");
-				/*
+				p.Add($"CUSTOMER: {input.CustId} Data Type: {input.DataType} Month:{input.Month?.Trim()} Year:{input.Year?.Trim()}");
+				
 				p.Add(new Tab());
 				p.AddTabStops(new TabStop(1000, TabAlignment.RIGHT));
-				p.Add("Text to the Left");
-				*/
+				p.Add("Page 1");
+				
 				document.Add(p);
 				
 				//header
-				float[] ColumnWidth = { 30f, 30f, 40f, 30f, 50f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 20f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f };
+				float[] ColumnWidth = { 17f, 17f, 35f, 25f, 40f, 40f, 90f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 20f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f, 17f };
 				iText.Layout.Element.Table table = new iText.Layout.Element.Table(ColumnWidth);
+				AddCell(table, "FAC NO.");
+				AddCell(table, "Line");
 				AddCell(table,"MOD");
 				AddCell(table,"KBNo");
 				AddCell(table,"CUST PART");
@@ -844,67 +886,59 @@ namespace TKC_MDS.Controllers
 				#endregion
 
 				ulong line_counter = 0; //loop counter
-				var factorys = orders.Select(order => order.FacNo).Distinct().ToList(); //select facno 
+				int page_number = 2; //page counter
+
+				var factorys = orders.Select(order => order.FacNo).Distinct().OrderBy(x => x).ToList(); //select facno 
 				foreach (var fac in factorys)
 				{
 					var plants = orders.Where(order => order.FacNo == fac).Select(order => order.PlantCode).Distinct().ToList(); //select plant
 					foreach (var plant in plants)
 					{
+						/*
 						iText.Layout.Element.Table table_plan = new iText.Layout.Element.Table(ColumnWidth);
 						AddCellNoBorder(table_plan,$"Factory: {fac} Plant: {plant}");
+
 						for (int i = 0; i < 35; i++) AddCellNoBorder(table_plan, "");
 						document.Add(table_plan);
-
+						*/
+						//document.Add(new Paragraph($"Factory: {fac} Plant: {plant}").SetTextAlignment(TextAlignment.LEFT));
 						foreach (var print_order in orders.Where(order => order.FacNo == fac && order.PlantCode == plant).ToList())//one day
 						{
-							
+
+							bool is_text_overflow = false;
 							//print
 							iText.Layout.Element.Table tabledata = new iText.Layout.Element.Table(ColumnWidth);
-
-							AddCellNoBorder(tabledata, print_order.MODEL == null ? "": print_order.MODEL);
+							AddCellNoBorder(tabledata, print_order.FacNo);
+							AddCellNoBorder(tabledata, print_order.Line);
+							// mod
+							var text_model = print_order.MODEL == null ? "" : print_order.MODEL;
+							if(text_model.Length >= 11)
+							{
+								is_text_overflow=true;
+							}
+							AddCellNoBorder(tabledata, text_model);
+							//end mod
 							AddCellNoBorder(tabledata, print_order.KBCd == null ? "" : print_order.KBCd);
 							AddCellNoBorder(tabledata, print_order.CustPartNo2 == null ? "" : print_order.CustPartNo2);
 							AddCellNoBorder(tabledata, print_order.TKCPartNo == null ? "" : print_order.TKCPartNo);
-							AddCellNoBorder(tabledata, print_order.PartName == null ? "" : print_order.PartName);
+							//partNo
+							var text_part = print_order.PartName == null ? "" : print_order.PartName;
+							if(text_part.Length >= 32)
+							{
+								is_text_overflow = true;
+							}
+							var para_part = new Paragraph(text_part).SetTextAlignment(TextAlignment.LEFT);
+							tabledata.AddCell(new Cell().Add(para_part).SetFontSize(4).SetBorder(Border.NO_BORDER));
+							//para_part.SetProperty(Property.OVERFLOW_X, OverflowPropertyValue.HIDDEN);
 
+							//end partNo
+							if (is_text_overflow) //if oveflow
+							{
+								line_counter++;
+								is_text_overflow = false; //reset
+							}
 							#region day
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day1.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day2.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day3.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day4.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day5.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
 
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day6.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day7.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day8.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day9.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day10.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day11.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day12.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day13.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day14.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day15.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day16.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day17.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day18.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day19.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day20.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day21.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day22.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day23.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day24.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day25.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day26.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day27.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day28.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day29.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day30.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
-
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Day31.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
 							AddCellNoBorder(tabledata, print_order.Day1.ToString());
 							AddCellNoBorder(tabledata, print_order.Day2.ToString());
 							AddCellNoBorder(tabledata, print_order.Day3.ToString());
@@ -943,10 +977,18 @@ namespace TKC_MDS.Controllers
 
 							AddCellNoBorder(tabledata, print_order.Day31.ToString());
 							#endregion
-							//table.AddCell(new Cell().Add(new Paragraph(print_order.Total.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5)).SetBorderRight(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER);
 							AddCellNoBorder(tabledata, print_order.Total.ToString());
 
 							document.Add(tabledata);
+							line_counter++;
+							
+							if(line_counter > 50)
+							{
+								PrintHeader(document,page_number);
+								page_number++; //conster next page
+								line_counter = 0; //reset line
+							}
+							
 						}
 					}
 
@@ -988,13 +1030,15 @@ namespace TKC_MDS.Controllers
 					{
 						fTotal += ftotal.Total;
 					}
-					//print
+					//print 
 					iText.Layout.Element.Table table_sum_fac = new iText.Layout.Element.Table(ColumnWidth);
 					AddCellNoBorder(table_sum_fac, "");
 					AddCellNoBorder(table_sum_fac, "");
 					AddCellNoBorder(table_sum_fac, "");
 					AddCellNoBorder(table_sum_fac, "");
-					AddCellNoBorder(table_sum_fac, "Factory: " + fac + " Plant: " + " Total : "); // plants
+					AddCellNoBorder(table_sum_fac, "");
+					AddCellNoBorder(table_sum_fac, "");
+					AddCellNoBorder(table_sum_fac, "FAC NO.:" + fac + " Total: "); // plants
 
 					#region day
 
@@ -1039,6 +1083,14 @@ namespace TKC_MDS.Controllers
 					//tabledata.AddCell(new Cell().Add(new Paragraph(fTotal.ToString()).SetTextAlignment(TextAlignment.CENTER)).SetFontSize(5));
 					AddCellNoBorder(table_sum_fac, fTotal.ToString());
 					document.Add(table_sum_fac);
+					
+					line_counter++;
+					if (line_counter > 50)
+					{
+						PrintHeader(document, page_number);
+						page_number++; //conster next page
+						line_counter = 0; //reset line
+					}
 				}
 				#region sum all
 				//sum all of query
@@ -1080,6 +1132,8 @@ namespace TKC_MDS.Controllers
 				}
 				
 				iText.Layout.Element.Table t = new iText.Layout.Element.Table(ColumnWidth);
+				AddCell(t, "");
+				AddCell(t, "");
 				AddCell(t, "");
 				AddCell(t, "");
 				AddCell(t, "");

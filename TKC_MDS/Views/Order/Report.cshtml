@@ -59,25 +59,26 @@
 										</select>
 									</td>
 								</tr>
-								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
+								@*<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
 										ประเภทรายงาน :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" name="ReportType">
-											@*<option value="1" data-select2-id="select2-data-9-lsju">แผนการส่งของ</option>*@
+											<option value="1" data-select2-id="select2-data-9-lsju">แผนการส่งของ</option>
 										</select>
 									</td>
-								</tr>
+								</tr>*@
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-gray-400 pe-3 min-w-100px">
-										เดือนรายงาน :
+										เดือนปีรายงาน :
 									</th>
 									<td class="text-end pe-3 min-w-50px">
-										<select class="form-select form-select-sm form-select-solid w-200px" id="select_month" name="ReportMount">
-											@*<option value="1" data-select2-id="select2-data-12-7me1">06-2023</option>
-											<option value="1">07-2023</option>
-											<option value="1">08-2023</option>*@
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_month" name="Month">
+										</select>
+									</td>
+									<td>
+										<select class="form-select form-select-sm form-select-solid w-200px" id="select_year" name="Year" @*name="ReportMount"*@>
 										</select>
 									</td>
 								</tr>
@@ -88,10 +89,11 @@
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" name="DocReportType">
 											<option value="PDF" selected>PDF</option>
-											<option value="CSV">CSV(excell)</option>
+											<option value="CSV">CSV(excel)</option>
 										</select>
 									</td>
 								</tr>
+								@*
 								<tr class="text-start  fw-bold fs-7 text-uppercase gs-0">
 									<th class="text-end  text-dark pe-3 min-w-100px">
 										เพิ่มเติม
@@ -103,7 +105,6 @@
 									</th>
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" name="Plan">
-											@*<option value="1" data-select2-id="select2-data-15-nlkk">All</option>*@
 										</select>
 									</td>
 								</tr>
@@ -113,7 +114,6 @@
 									</th>
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" name="Period">
-											@*<option value="1" data-select2-id="select2-data-18-2vhz">All</option>*@
 										</select>
 									</td>
 								</tr>
@@ -123,7 +123,7 @@
 									</th>
 									<td class="text-end pe-3 min-w-50px">
 										<select class="form-select form-select-sm form-select-solid w-200px" name="DueTime">
-											@*<option value="1" data-select2-id="select2-data-21-tssa">All</option>*@
+
 										</select>
 									</td>
 								</tr>
@@ -134,7 +134,7 @@
 									<td class="text-start pe-3 min-w-50px">
 										<input type="text" name="PNCust" id="">
 									</td>
-								</tr>
+								</tr>*@
 								<!--end::Table row-->
 								<!--end::Table head-->
 							</tbody>
@@ -164,7 +164,7 @@
 		const dataType = document.getElementById("select_dataType").value;
 		fetch("/order/GetMounthReport?custId=" + custId + "&dataType=" + dataType, { method: "post" }).then(res => res.json()).then(data => {
 			console.log(data);
-			let html = data.reduce((prev, curr) => prev += `<option  value="${curr}" >${curr}</option>`, `<option selected value="" >---เลือก---</option>`);
+			let html = data.reduce((prev, curr) => prev += `<option  value="${curr}" >${curr}</option>`, `<option selected value="" >---เลือกเดือน---</option>`);
 			document.getElementById("select_month").innerHTML = html;
 
 		}).catch(error => console.log(error));
@@ -197,5 +197,18 @@
 		const data_type = await dataType.json();
 		let select_dataType = document.getElementById("select_dataType");
 		select_dataType.innerHTML = data_type.reduce((prev, curr) => prev += `<option value="${curr?.typeCode}">${curr?.typeCode}-${curr?.typeName}</option>`, `<option selected value="" >---เลือก---</option>`);
+
+		let years = []
+		for (let year = 2023; year <= 2030; year++) {
+			years.push(year);
+		}
+		document.getElementById("select_year").innerHTML = years.reduce((prev, curr) => prev += `<option value="${curr}" >${curr}</option>`, `<option selected value="" >---เลือกปี---</option>`);
+
+		let mouths = []
+		for (let month = 1; month <= 12; month++) {
+			mouths.push(month);
+		}
+		document.getElementById("select_month").innerHTML = mouths.reduce((prev, curr) => prev += `<option value="${curr}">${curr}</option>`, `<option selected value="" >---เลือกเดือน---</option>`);
+
 	}
 </script>
