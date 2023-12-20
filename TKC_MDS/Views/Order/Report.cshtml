@@ -174,7 +174,6 @@
 		let form = document.getElementById("kt_app_content");
 		let formData = new FormData(form);
 		fetch("/order/Report", { method: "post", body: formData }).then(res => res.blob()).then(blob => {
-			console.log(blob)
 			if (blob.error) {
 				Swal.fire('เกิดข้อผิดพลาด '+data.error);
 				return;

@@ -1,4 +1,5 @@
 
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -38,10 +39,19 @@ builder.Services.AddDefaultIdentity<AppUser>(options => {
     //.AddDefaultUI()
     .AddDefaultTokenProviders();
 
+//remove Antiforgery
+builder.Services.AddAntiforgery(options => { options.Cookie.Expiration = TimeSpan.Zero; });
+
 builder.Services.ConfigureApplicationCookie(option =>
 {
     option.AccessDeniedPath = "/ErrorHandler/AccessDenied";
-    option.LoginPath = "/user/index";
+    option.LoginPath = "/user/Login";
+	option.Cookie.HttpOnly = true;
+	option.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+	// ReturnUrlParameter requires 
+	//using Microsoft.AspNetCore.Authentication.Cookies;
+	option.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+	option.SlidingExpiration = true;
 });
 
 //add log

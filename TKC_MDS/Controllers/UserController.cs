@@ -38,7 +38,7 @@ namespace TKC_MDS.Controllers
 
 			return View();
         }
-
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string? user_name,string? password)
         {
             if (string.IsNullOrEmpty(user_name) || string.IsNullOrEmpty(password))  return View();
@@ -63,9 +63,9 @@ namespace TKC_MDS.Controllers
 							}
 						}
 					}
-					await _signInManager.SignInWithClaimsAsync(user, false, claims);
+					await _signInManager.SignInWithClaimsAsync(user, true, claims);
                     //redirect
-                    return Redirect("/home/index");
+                    return RedirectToAction(actionName: "Index", controllerName: "Home");
 				}
 				ViewData["Error"] = "รหัสผ่านไม่ถูกต้อง";
 				return View();
@@ -73,7 +73,7 @@ namespace TKC_MDS.Controllers
             ViewData["Error"] = "ไม่พบ user";
             return View();
         }
-
+        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

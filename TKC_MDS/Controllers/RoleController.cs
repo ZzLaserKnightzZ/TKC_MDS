@@ -37,13 +37,22 @@ namespace TKC_MDS.Controllers
             var listRoles = new List<ListRoles>();
             foreach (var role in Rols)
             {
-                listRoles.Add(new ListRoles {
-                    RoleId=role.Id,
-                    RoleName=role.Name,
-                    claimRole= ClaimRole.Where(x => x.RoleId.Equals(Guid.Parse(role.Id))).ToList(),
+                try
+                {
+                    var id = Guid.Parse(role.Id);
+					var claim_role = ClaimRole.Where(x => x.RoleId.Equals(id)).ToList();
 
-				});
-
+					listRoles.Add(new ListRoles
+					{
+						RoleId = role.Id,
+						RoleName = role.Name,
+						claimRole = claim_role,
+					});
+                }
+                catch (Exception ex)
+                {
+                   // throw new Exception(ex.Message);
+                }
 			}
 
             ViewData["ListRole"] = listRoles;
